@@ -99,6 +99,7 @@ jobs:
           SSH_HOST: ${SSH_HOST}
         run: |
           cloudflared -v
+          mkdir /etc/.ssh
           cat > /etc/.ssh/config << EOL
           Host $SSH_HOST
             ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h
