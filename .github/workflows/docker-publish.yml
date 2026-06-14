@@ -106,7 +106,10 @@ jobs:
               ProxyCommand cloudflared access ssh --hostname %h
 
       - name: Deploy to production
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
         run:
-          ssh -o ProxyCommand="cloudflared access ssh --hostname ${{secrets.SSH_HOST}}" pi@${{secrets.SSH_HOST}} < ./deploy.sh
+          ssh -o ProxyCommand="cloudflared access ssh --hostname ${{secrets.SSH_HOST}}" ${{secrets.SSH_USERNAME}}@${{secrets.SSH_HOST}} < ./deploy.sh
 
 
