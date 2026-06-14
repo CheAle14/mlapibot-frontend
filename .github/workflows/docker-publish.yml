@@ -107,16 +107,17 @@ jobs:
               ProxyCommand cloudflared access ssh --id ${{ secrets.ACCESS_TOKEN_ID }} --secret ${{ secrets.ACCESS_TOKEN_SECRET }} --hostname %h
               IdentityFile ~/.ssh/id_ed25519
       
-      - name: Test
+      - name: Copy new compose to server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "~/mlapibot-frontend/docker-compose.yml"
+      
+      - name: Restart compose stack
         run:
-          echo test | cloudflared access ssh --id ${{ secrets.ACCESS_TOKEN_ID }} --secret ${{ secrets.ACCESS_TOKEN_SECRET }} --hostname ${{ secrets.SSH_HOST }}
-          
-
-      - name: Deploy to production
-        env:
-          TAGS: ${{ steps.meta.outputs.tags }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        run:
-          ssh -vvv ${{secrets.SSH_USERNAME}}@${{secrets.SSH_HOST}} < ./deploy.sh
+          ssh ${{secrets.SSH_USERNAME}}@${{secrets.SSH_HOST}} < ./deploy.sh "${{ steps.meta.outputs.tags }}"
 
 

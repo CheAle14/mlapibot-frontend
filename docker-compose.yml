@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: ghcr.io/cheale14/mlapibot-frontend:main
+    image: ghcr.io/cheale14/mlapibot-frontend:${IMAGE_TAG:-main}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
