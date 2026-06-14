@@ -106,11 +106,7 @@ jobs:
               ProxyCommand cloudflared access ssh --hostname %h
 
       - name: Deploy to production
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            whoami
-            ls -al
+        run:
+          ssh -o ProxyCommand="cloudflared access ssh --hostname ${{secrets.SSH_HOST}}" pi@${{secrets.SSH_HOST}} < ./deploy.sh
+
+
