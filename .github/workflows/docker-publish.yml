@@ -108,13 +108,9 @@ jobs:
               IdentityFile ~/.ssh/id_ed25519
       
       - name: Copy new compose to server
-        uses: appleboy/scp-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          source: "docker-compose.yml"
-          target: "~/mlapibot-frontend/docker-compose.yml"
+        run:
+          ls -la ~
+          scp ~/docker-compose.yml ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}}:~/mlapibot_frontend/docker-compose.yml
       
       - name: Restart compose stack
         run:
