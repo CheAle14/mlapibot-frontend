@@ -94,24 +94,21 @@ jobs:
       - name: Install cloudflared
         uses: AnimMouse/setup-cloudflared@v2
 
-      - name: Setup cloudflared proxy
-        env:
-          SSH_HOST: ${SSH_HOST}
-        run: |
-          cloudflared -v
-          mkdir /etc/.ssh
-          cat > /etc/.ssh/config << EOL
-          Host $SSH_HOST
-            ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h
-          EOL
+      - name: install-ssh-key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          name: id_ed25519
+          if_key_exists: fail
+          config: |
+            Host ${{ secrets.SSH_HOST }}
+              ProxyCommand cloudflared access ssh --hostname %h
 
       - name: Deploy to production
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
           script: |
             whoami
             ls -al
