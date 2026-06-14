@@ -109,8 +109,7 @@ jobs:
       
       - name: Copy new compose to server
         run:
-          ls -la ~
-          scp ~/docker-compose.yml ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}}:~/mlapibot_frontend/docker-compose.yml
+          scp ${{ github.workspace }}/docker-compose.yml ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}}:~/mlapibot_frontend/docker-compose.yml
       
       - name: Restart compose stack
         run:
