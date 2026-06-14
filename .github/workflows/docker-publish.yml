@@ -99,6 +99,7 @@ jobs:
         with:
           key: ${{ secrets.SSH_KEY }}
           name: id_ed25519
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           if_key_exists: fail
           config: |
             Host ${{ secrets.SSH_HOST }}
