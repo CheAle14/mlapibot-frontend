@@ -104,7 +104,7 @@ jobs:
           config: |
             Host ${{ secrets.SSH_HOST }}
               User ${{ secrets.SSH_USERNAME }}
-              ProxyCommand cloudflared access ssh --hostname %h
+              ProxyCommand cloudflared access ssh --id ${{ secrets.ACCESS_TOKEN_ID }} --secret ${{ secrets.ACCESS_TOKEN_SECRET }} --hostname %h
               IdentityFile ~/.ssh/id_ed25519
 
       - name: Deploy to production
