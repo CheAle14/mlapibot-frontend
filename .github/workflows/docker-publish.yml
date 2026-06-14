@@ -113,6 +113,6 @@ jobs:
       
       - name: Restart compose stack
         run:
-          ssh ${{secrets.SSH_USERNAME}}@${{secrets.SSH_HOST}} < "./deploy.sh ${{ steps.build-and-push.outputs.digest }}"
+          ssh ${{secrets.SSH_USERNAME}}@${{secrets.SSH_HOST}} < ./deploy.sh
 
 
