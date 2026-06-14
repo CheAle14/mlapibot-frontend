@@ -12,7 +12,10 @@
     let { children, data }: LayoutProps = $props();
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head>
+    <title>/u/mlapibot</title>
+    <link rel="icon" href={favicon} />
+</svelte:head>
 
 <Toaster richColors />
 
