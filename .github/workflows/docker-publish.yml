@@ -109,7 +109,7 @@ jobs:
       
       - name: Test
         run:
-          echo test | cloudflared access ssh --id ${{ secrets.ACCESS_TOKEN_ID }} --secret ${{ secrets.ACCESS_TOKEN_SECRET }} --hostname %h
+          echo test | cloudflared access ssh --id ${{ secrets.ACCESS_TOKEN_ID }} --secret ${{ secrets.ACCESS_TOKEN_SECRET }} --hostname ${{ secrets.SSH_HOST }}
           
 
       - name: Deploy to production
