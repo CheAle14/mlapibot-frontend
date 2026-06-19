@@ -1,24 +1,23 @@
 <script lang="ts">
-    import { SendHorizonal } from "@lucide/svelte";
-    import { Button } from "../ui/button";
-    import * as Dialog from "../ui/dialog";
-    import * as Field from "../ui/field";
-    import { Input, InputList } from "../ui/input";
-    import * as Tabs from "../ui/tabs";
-    import { FormWrapped } from "../reuse/form";
-    import { useId } from "bits-ui";
-    import { Textarea } from "../ui/textarea";
     import {
         fetchRedditSubmission,
         fetchScamAnalysisResult,
     } from "$lib/api/scams.remote";
     import type {
         GotAnalysis,
-        GotRedditPost,
-        PostAction,
+        GotRedditPost
     } from "$lib/types/api";
-    import TestScamResultsModal from "./TestScamResultsModal.svelte";
+    import { SendHorizonal } from "@lucide/svelte";
+    import { useId } from "bits-ui";
+    import { FormWrapped } from "../reuse/form";
     import * as Alert from "../ui/alert";
+    import { Button } from "../ui/button";
+    import * as Dialog from "../ui/dialog";
+    import * as Field from "../ui/field";
+    import { Input, InputList } from "../ui/input";
+    import * as Tabs from "../ui/tabs";
+    import { Textarea } from "../ui/textarea";
+    import TestScamResultsModal from "./TestScamResultsModal.svelte";
 
     interface Props {
         subreddit_id: string;
@@ -70,7 +69,8 @@
         let post;
         try {
             post = await fetchRedditSubmission(link);
-        } catch {
+        } catch (err) {
+            console.error('failed to fetch reddit submission:', err);
             isError = true;
             return;
         } finally {

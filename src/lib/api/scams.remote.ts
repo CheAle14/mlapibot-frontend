@@ -11,7 +11,7 @@ export const getSubredditScams = query(z.string(), async (subreddit) => {
   return await db.getSubredditScamRules(subreddit);
 });
 
-export const fetchRedditSubmission = query(z.httpUrl(), async (link) => {
+export const fetchRedditSubmission = command(z.httpUrl(), async (link) => {
   console.log("Fetching", link);
   const result = await fetch(env.API_URL + "/get-reddit", {
     method: "POST",

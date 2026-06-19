@@ -1,9 +1,9 @@
-import { form, query } from "$app/server";
-import * as z from "zod";
+import { form } from "$app/server";
 import * as db from "$lib/server/database";
-import { error } from "@sveltejs/kit";
-import { isAdmin, isModeratorOf } from "./auth.remote";
 import type { Subreddit } from "$lib/types/subreddit";
+import { error } from "@sveltejs/kit";
+import * as z from "zod";
+import { isAdmin } from "./auth.remote";
 
 export const createSubreddit = form(
   z.object({
