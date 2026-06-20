@@ -1,5 +1,5 @@
 import { form, query } from "$app/server";
-import { API_URL } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import * as db from "$lib/server/database";
 import { assertSubredditId, ZSubredditId, type ApiRemovalReason, type Subreddit } from "$lib/types/subreddit";
 import { error } from "@sveltejs/kit";
@@ -79,7 +79,7 @@ interface ApiResponse {
 export const fetchRemovalReasons = query(ZSubredditId, async (subreddit) => {
   if (!(await isModeratorOf(subreddit))) return error(403);
 
-  const response = await fetch(API_URL + '/removal-reasons', {
+  const response = await fetch(env.API_URL + '/removal-reasons', {
     method: 'POST',
     body: JSON.stringify(subreddit),
   });
