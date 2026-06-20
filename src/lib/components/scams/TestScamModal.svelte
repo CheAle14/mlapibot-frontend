@@ -219,7 +219,7 @@
 
                             <Field.Field>
                                 <Field.Label>Body / Self text</Field.Label>
-                                <Textarea bind:value={firstModal.body} />
+                                <Textarea class="max-h-50 overflow-y-scroll" bind:value={firstModal.body} />
                             </Field.Field>
                         </Field.Set>
                     </Field.Group>
