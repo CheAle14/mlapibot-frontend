@@ -13,9 +13,10 @@
     interface Props {
         subreddit: SidebarSubreddit;
         post_id: string;
+        refetchTrigger: number;
     }
 
-    let { subreddit, post_id }: Props = $props();
+    let { subreddit, post_id, refetchTrigger }: Props = $props();
 
     let page = $state<PageReq>({
         page: 0,
@@ -29,6 +30,11 @@
             page,
         }),
     );
+
+    $effect(() => {
+        if (refetchTrigger > 0)
+            query.refresh();
+    });
 </script>
 
 <Item.Root variant="outline" class="w-auto m-2">
@@ -72,8 +78,10 @@
                             /u/{item.author_name}
                         </Anchor>
                     </TableCell>
-                    <TableCell>
-                        <Markdown md={item.content} />
+                    <TableCell class="whitespace-normal">
+                        <div class="overflow-y-scroll max-h-25">
+                            <Markdown md={item.content} />
+                        </div>
                     </TableCell>
                 </TableRow>
             {/snippet}

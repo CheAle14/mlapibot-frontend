@@ -531,15 +531,26 @@ export async function getStaffReplyThreads(
   };
 }
 
+export async function isStaffReplyThreadInSubreddit(
+  { subreddit_id }: SubredditId,
+  post_id: string,
+) {
+  const [row]: [{ count: number }?] = await sql`
+    SELECT COUNT(*) as count FROM staff_reply_threads
+    WHERE subreddit_id=${subreddit_id} AND post_id=${post_id}
+  `;
+
+  return row && row.count == 1;
+}
+
 export async function getStaffRepliesInThread(
-  {subreddit_id}: SubredditId,
   post_id: string,
   page: PageReq,
 ): Promise<PageResp<StaffReply>> {
   const rows = await sql<StaffReply[]>`
     SELECT *
     FROM staff_replies
-    WHERE post_id=${post_id} AND subreddit_id=${subreddit_id}
+    WHERE post_id=${post_id}
     ORDER BY created_at DESC
     OFFSET ${page.page * page.limit}
     LIMIT ${page.limit}`;

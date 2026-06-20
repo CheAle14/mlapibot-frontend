@@ -1,15 +1,13 @@
 <script lang="ts" generics="T">
     import { Button } from "$lib/components/ui/button";
-    import { Json } from "$lib/components/ui/json";
     import { Spinner } from "$lib/components/ui/spinner";
     import {
         Table,
         TableBody,
         TableCell,
         TableFooter,
-        TableHead,
         TableHeader,
-        TableRow,
+        TableRow
     } from "$lib/components/ui/table";
     import type { PageReq, PageResp } from "$lib/types/pagination";
     import type { RemoteQuery } from "@sveltejs/kit";
@@ -22,6 +20,7 @@
         query: Query;
         header: Snippet<[Query]>;
         row: Snippet<[T, number, PageResp<T>]>;
+        footer?: Snippet<[Query]>;
 
         skeletonRow?: Snippet<[number]>;
 
@@ -34,6 +33,7 @@
         query,
         header,
         row,
+        footer,
         skeletonRow,
         key,
         page = $bindable(),
@@ -56,6 +56,7 @@
     const maxPages = $derived(
         Math.floor((renderQuery?.total ?? 0) / page.limit - 1),
     );
+    const showPager = $derived(alwaysShowPager || maxPages > 0);
 </script>
 
 <Table>
@@ -75,8 +76,11 @@
         {/if}
     </TableBody>
 
-    {#if alwaysShowPager || maxPages > 0}
+    {#if showPager || footer}
         <TableFooter>
+        {@render footer?.(query) }
+
+        {#if showPager}
             <TableRow>
                 <TableCell colspan={"100%" as any}>
                     <div class="flex justify-around gap-5">
@@ -103,6 +107,7 @@
                     </div>
                 </TableCell>
             </TableRow>
+        {/if}
         </TableFooter>
     {/if}
 </Table>

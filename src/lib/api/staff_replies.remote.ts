@@ -32,7 +32,9 @@ export const fetchStaffRepliesInThread = query(
   async ({ subreddit, post_id, page }): Promise<PageResp<StaffReply>> => {
     if (!(await isModeratorOf(subreddit))) throw error(401);
 
-    const threads = await db.getStaffRepliesInThread(subreddit, post_id, page);
+    if (!(await db.isStaffReplyThreadInSubreddit(subreddit, post_id))) throw error(401);
+
+    const threads = await db.getStaffRepliesInThread(post_id, page);
     return threads;
   },
 );
@@ -57,10 +59,12 @@ export const refreshStaffReplyThread = command(
 
     if (!response.ok) throw error(response.status);
 
-    return (await response.json()) as {
+    const data = (await response.json()) as {
       total_comments: number;
       total_staff_comments: number;
       new_staff_comments: number;
     };
+
+    return data;
   },
 );

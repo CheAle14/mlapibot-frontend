@@ -6,14 +6,17 @@
     import { Anchor } from "$lib/components/reuse/anchor";
     import { PagedTable } from "$lib/components/reuse/paged-table";
     import { Button, PromiseButton } from "$lib/components/ui/button";
+    import { Input } from "$lib/components/ui/input";
     import { TableCell, TableHead, TableRow } from "$lib/components/ui/table";
     import type { PageReq } from "$lib/types/pagination";
     import type {
         StaffReplyThread
     } from "$lib/types/staff_replies";
+    import { parseRedditLink } from "$lib/utils";
     import {
         ChevronDown,
         ChevronUp,
+        Plus,
         RefreshCcw
     } from "@lucide/svelte";
     import { toast } from "svelte-sonner";
@@ -29,9 +32,12 @@
         limit: 10,
     });
 
+    let addNewThreadLink = $state('');
+
     const subreddit = $derived(data.subreddit.id);
 
     let expanded = $state<string | null>(null);
+    let refetchTrigger = $state<number>(0);
 
     const threads = $derived(
         fetchStaffReplyThreads({
@@ -52,10 +58,16 @@
         const makePromise = async () => {
             liveRefreshes++;
             try {
-                return await refreshStaffReplyThread({
+                const response =  await refreshStaffReplyThread({
                     ...thread,
                     subreddit,
                 });
+
+                if (response.new_staff_comments > 0 && expanded === thread.post_id) {
+                    refetchTrigger++;
+                }
+
+                return response;
             } finally {
                 liveRefreshes--;
             }
@@ -74,8 +86,59 @@
         return innerPromise;
     };
 
+    const addNewThread = async () => {
+        const makePromise = async () => {
+            liveRefreshes++;
+            try {
+                const link = parseRedditLink(addNewThreadLink);
+
+                console.log(addNewThreadLink, '=>', link);
+
+                if (!link) throw 'No or invalid link was provided';
+
+                if (link.subreddit !== data.subreddit.name) throw 'Link subreddit does not match this one';
+
+                if (!('post_id' in link) || !link.post_id) throw 'Must be a permalink to a post or any comment with in';
+
+                if (threads.current && threads.current.data.some(s => s.post_id === link.post_id)) 
+                    throw 'That thread already exists on this page. Just hit the refresh button next to it.'
+                
+                const response = await refreshStaffReplyThread({
+                    post_id: link.post_id,
+                    subreddit,
+                });
+
+                if (response.new_staff_comments > 0) {
+                    threads.refresh();
+                }
+
+                addNewThreadLink = '';
+                return response;
+            } finally {
+                liveRefreshes--;
+            }
+        };
+
+        const innerPromise = makePromise();
+
+        toast.promise(innerPromise, {
+            loading: `Searching for replies in new post`,
+            error: (err) => {
+                if (typeof err === 'string')
+                    return err;
+                return 'Failed to add new post';
+            },
+            success: (data) => {
+                return `Saw ${data.total_comments} comments, ${data.total_staff_comments} by staff of which ${data.new_staff_comments} were new`;
+            },
+        });
+
+        return innerPromise;
+    };
+
     const expandRow = (item: StaffReplyThread) => {
         if (expanded === item.post_id) {
+            refetchTrigger = 0;
             expanded = null;
         } else {
             expanded = item.post_id;
@@ -125,7 +188,7 @@
                     disabled={liveRefreshes >= 3}
                     size="icon-sm"
                     variant="ghost"
-                    onclick={async () => refreshStaffThread(item)}
+                    onclick={() => refreshStaffThread(item)}
                 >
                     <RefreshCcw />
                 </PromiseButton>
@@ -138,9 +201,32 @@
                     <StaffRepliesTable
                         subreddit={data.subreddit}
                         post_id={item.post_id}
+                        {refetchTrigger}
                     />
                 </TableCell>
             </TableRow>
         {/if}
+    {/snippet}
+
+    {#snippet footer()}
+        <TableRow>
+            <TableCell>
+            </TableCell>
+
+            <TableCell colspan={4}>
+                <Input type="url" placeholder={`https://reddit.com/r/...`} bind:value={addNewThreadLink} />
+            </TableCell>
+
+            <TableCell>
+                <PromiseButton
+                    disabled={threads.loading || !addNewThreadLink || liveRefreshes >= 3} 
+                    size="icon-sm" 
+                    variant="outline"
+                    onclick={addNewThread}
+                >
+                    <Plus />
+                </PromiseButton>
+            </TableCell>
+        </TableRow>
     {/snippet}
 </PagedTable>
