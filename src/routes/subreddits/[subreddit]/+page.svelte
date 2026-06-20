@@ -183,10 +183,13 @@
                         These aliases are primarily to allow OCR rules to be
                         copy-pasted between a test subreddit and this one
                     </p>
-                    <RemovalReasons
-                        original={options.removal_reasons}
-                        bind:current={changes.removal_reasons}
-                    />
+                    {#if open.indexOf("removal_reasons") !== -1}
+                        <RemovalReasons
+                            subreddit={data.subreddit}
+                            original={options.removal_reasons}
+                            bind:current={changes.removal_reasons}
+                        />
+                    {/if}
                 </Accordion.Content>
             </Accordion.Item>
 

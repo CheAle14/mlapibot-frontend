@@ -1,10 +1,10 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { createSubPost } from "$lib/api/posts.remote";
+    import { AlertError } from "$lib/components/reuse/alert";
     import { FormWrapped } from "$lib/components/reuse/form";
     import MarkdownContent from "$lib/components/reuse/markdown-content.svelte";
     import { SelectStickySlot } from "$lib/components/reuse/select";
-    import { AlertError } from "$lib/components/ui/alert";
     import { Button } from "$lib/components/ui/button";
     import {
         CheckboxGroup,

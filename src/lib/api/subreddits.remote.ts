@@ -1,9 +1,10 @@
-import { form } from "$app/server";
+import { form, query } from "$app/server";
+import { API_URL } from "$env/static/private";
 import * as db from "$lib/server/database";
-import { assertSubredditId, type Subreddit } from "$lib/types/subreddit";
+import { assertSubredditId, ZSubredditId, type ApiRemovalReason, type Subreddit } from "$lib/types/subreddit";
 import { error } from "@sveltejs/kit";
 import * as z from "zod";
-import { isAdmin } from "./auth.remote";
+import { isAdmin, isModeratorOf } from "./auth.remote";
 
 export const createSubreddit = form(
   z.object({
@@ -70,3 +71,20 @@ export const addSubredditModerator = form(
     await db.addModerator(assertSubredditId(subreddit_id), username);
   },
 );
+
+interface ApiResponse {
+  reasons: ApiRemovalReason[]
+}
+
+export const fetchRemovalReasons = query(ZSubredditId, async (subreddit) => {
+  if (!(await isModeratorOf(subreddit))) return error(403);
+
+  const response = await fetch(API_URL + '/removal-reasons', {
+    method: 'POST',
+    body: JSON.stringify(subreddit),
+  });
+
+  const { reasons } = (await response.json()) as ApiResponse;
+
+  return reasons;
+});

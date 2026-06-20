@@ -1,18 +1,25 @@
 <script lang="ts">
-    import { Button } from "$lib/components/ui/button";
-    import * as Table from "$lib/components/ui/table";
-    import { Trash2 } from "@lucide/svelte";
-    import type { RemReasonItem } from "./RemReasonModal.svelte";
-    import RemReasonModal from "./RemReasonModal.svelte";
-    import * as Dialog from "$lib/components/ui/dialog";
+    import { fetchRemovalReasons } from "$lib/api/subreddits.remote";
     import TableChangesCell from "$lib/components/reuse/table/table-changes-cell.svelte";
+    import * as Alert from "$lib/components/ui/alert";
+    import { Button } from "$lib/components/ui/button";
+    import PromiseButton from "$lib/components/ui/button/promise-button.svelte";
+    import * as Dialog from "$lib/components/ui/dialog";
+    import * as Select from "$lib/components/ui/select";
+    import * as Table from "$lib/components/ui/table";
+    import type { SidebarSubreddit } from "$lib/types/subreddit";
+    import { CircleAlert, Plus, Trash, Undo, X } from "@lucide/svelte";
+    import RemReasonModal from "./RemReasonModal.svelte";
 
     interface Props {
+        subreddit: SidebarSubreddit;
         original: Record<string, string>;
         current: Record<string, string>;
     }
 
-    let { original, current = $bindable() }: Props = $props();
+    let { subreddit, original, current = $bindable() }: Props = $props();
+
+    const apiReasons = $derived(fetchRemovalReasons(subreddit.id));
 
     const deleteItem = (key: string) => {
         delete current[key];
@@ -23,30 +30,77 @@
         current[key] = original[key];
     };
 
-    let modalItem = $state<RemReasonItem | null>(null);
+    let modalOpen = $state(false);
 
     const allKeys: Record<string, string> = $derived({
         ...original,
         ...current,
     });
+
+    const handleCreateReason = () => {
+        return new Promise<void>((resolve, reject) => {
+            const opened = window.open(`https://sh.reddit.com/mod/${subreddit.name}/saved-responses/removals`, 'CreateRemovalReason');
+
+            if (opened) {
+                let interval = setInterval(() => {
+                    if (opened.closed) {
+                        clearInterval(interval);
+                        apiReasons.refresh().then(resolve).catch(reject);
+                    }
+                }, 1000);
+            } else {
+                reject();
+            }
+        });
+
+    };
 </script>
 
-{#if modalItem}
-    <Dialog.Root bind:open={() => true, (v) => (modalItem = null)}>
+{#if modalOpen}
+    <Dialog.Root bind:open={modalOpen}>
         <RemReasonModal
-            bind:item={modalItem}
-            onSubmit={(i) => {
-                current[i.key] = i.value;
-                modalItem = null;
+            onSubmit={(alias) => {
+                current[alias] = apiReasons.current?.at(0)?.id ?? 'set-id-here';
+                modalOpen = false;
             }}
         />
     </Dialog.Root>
 {/if}
 
+{#if apiReasons.error}
+    <Alert.Root variant="destructive" class="my-10">
+        <CircleAlert />
+        <Alert.Title>Failed to fetch removal reasons from Reddit</Alert.Title>
+
+        <Alert.Description>An error has occured whilst trying to fetch the removal reasons from Reddit.</Alert.Description>
+
+        
+        <Alert.Action>
+            <PromiseButton onclick={() => apiReasons.refresh()} size="sm" errorTickTimeMs={2500}>
+                Retry
+            </PromiseButton>
+        </Alert.Action>
+    </Alert.Root>
+{:else if apiReasons.current?.length === 0}
+    <Alert.Root class="my-10">
+        <CircleAlert />
+        <Alert.Title>No removal reasons from Reddit</Alert.Title>
+        <Alert.Description>
+                Reddit has not returned any removal reasons to populate the options below.
+        </Alert.Description>
+
+        <Alert.Action>
+            <PromiseButton onclick={handleCreateReason} size="sm">
+                Create reason
+            </PromiseButton>
+        </Alert.Action>
+    </Alert.Root>
+{/if}
+
 <Table.Root>
     <Table.Header>
         <Table.Row>
-            <Table.Head class="w-1"></Table.Head>
+            <Table.Head class="w-10"></Table.Head>
             <Table.Head>Alias</Table.Head>
             <Table.Head>Reason UUID</Table.Head>
         </Table.Row>
@@ -56,6 +110,7 @@
             {@const created = original[alias] === undefined}
             {@const updated = original[alias] !== current[alias]}
             {@const deleted = current[alias] === undefined}
+            {@const fromApi = apiReasons?.current?.find(s => s.id === reason_id)}
 
             <Table.Row class={[deleted && "line-through"]}>
                 <TableChangesCell {deleted} {updated} {created} />
@@ -63,31 +118,59 @@
                     {alias}
                 </Table.Cell>
                 <Table.Cell>
-                    {reason_id}
+                    {#if apiReasons.current === undefined}
+                        {reason_id}
+                    {:else}
+                        <Select.Root 
+                            type="single" 
+                            bind:value={() => reason_id, (newId) => current[alias] = newId}
+                        >
+                            <Select.Trigger
+                                class="lg:min-w-md"
+                            >
+                                {#if fromApi}
+                                    {fromApi.title}
+                                {:else}
+                                    <X />
+
+                                    {reason_id}
+                                {/if}
+                            </Select.Trigger>
+
+                            <Select.Content>
+                                <Select.Label>Reasons</Select.Label>
+
+                                {#each apiReasons.current as reason (reason.id)}
+                                    <Select.Item 
+                                        value={reason.id}
+                                        label={reason.title}
+                                    >
+                                        {reason.title}
+                                    </Select.Item>
+                                {/each}
+                            </Select.Content>
+                        </Select.Root>
+                    {/if}
                 </Table.Cell>
                 <Table.Cell class="flex justify-end  gap-2">
                     {#if deleted}
                         <Button
                             class="float-end"
                             variant="outline"
-                            onclick={() => undeleteItem(alias)}>Restore</Button
+                            size="icon-sm"
+                            onclick={() => undeleteItem(alias)}>
+                                <Undo />
+                            </Button
                         >
                     {:else}
                         <Button
                             class="float-end"
-                            onclick={() =>
-                                (modalItem = {
-                                    adding: false,
-                                    key: alias,
-                                    value: reason_id,
-                                })}>Edit</Button
-                        >
-
-                        <Button
-                            class="float-end"
                             variant="destructive"
-                            onclick={() => deleteItem(alias)}>Delete</Button
+                            size="icon-sm"
+                            onclick={() => deleteItem(alias)}
                         >
+                            <Trash />    
+                        </Button>
                     {/if}
                 </Table.Cell>
             </Table.Row>
@@ -97,11 +180,13 @@
         <Table.Row>
             <Table.Cell colspan={4}>
                 <Button
-                    size="sm"
+                    size="icon-sm"
                     class="float-end"
-                    onclick={() =>
-                        (modalItem = { adding: true, key: "", value: "" })}
-                    >New</Button
+                    variant="outline"
+                    onclick={() => modalOpen = true}
+                >
+                    <Plus />
+                </Button
                 >
             </Table.Cell>
         </Table.Row>

@@ -1,9 +1,9 @@
 <script lang="ts">
-    import Alert from "./alert.svelte";
-    import AlertTitle from "./alert-title.svelte";
-    import AlertDescription from "./alert-description.svelte";
-    import { isHttpError } from "@sveltejs/kit";
     import { CircleAlert } from "@lucide/svelte";
+    import { isHttpError } from "@sveltejs/kit";
+    import AlertDescription from "../../ui/alert/alert-description.svelte";
+    import AlertTitle from "../../ui/alert/alert-title.svelte";
+    import Alert from "../../ui/alert/alert.svelte";
 
     interface Props {
         title: string;

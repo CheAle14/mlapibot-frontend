@@ -1,30 +1,21 @@
 <script lang="ts">
-    import * as Dialog from "$lib/components/ui/dialog";
-    import { Input } from "$lib/components/ui/input";
     import { Button } from "$lib/components/ui/button";
+    import * as Dialog from "$lib/components/ui/dialog";
     import * as Field from "$lib/components/ui/field";
-
-    export interface RemReasonItem {
-        adding: boolean;
-        key: string;
-        value: string;
-    }
+    import { Input } from "$lib/components/ui/input";
 
     interface Props {
-        item: RemReasonItem;
-        onSubmit(item: RemReasonItem): void;
+        onSubmit(alias: string): void;
     }
 
-    let { item = $bindable(), onSubmit }: Props = $props();
+    let { onSubmit }: Props = $props();
+
+    let value = $state('');
 </script>
 
 <Dialog.Content>
     <Dialog.Header>
-        {#if item.adding}
-            Create Alias
-        {:else}
-            Edit {item.key}
-        {/if}
+        Create Alias
     </Dialog.Header>
     <Field.Group>
         <Field.Set>
@@ -34,20 +25,14 @@
 
                     <Input
                         type="text"
-                        bind:value={item.key}
-                        disabled={!item.adding}
+                        bind:value
                     />
-                </Field.Field>
-
-                <Field.Field>
-                    <Field.Label>Removal Reason UUID</Field.Label>
-                    <Input type="text" bind:value={item.value} />
                 </Field.Field>
             </Field.Group>
         </Field.Set>
     </Field.Group>
     <Dialog.Footer>
-        <Button type="submit" onclick={() => onSubmit(item)}
+        <Button type="submit" onclick={() => onSubmit(value)}
             >Save changes</Button
         >
     </Dialog.Footer>

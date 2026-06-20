@@ -211,3 +211,11 @@ export const ModuleKeys: ModuleKeys[] = [
   "comments_code",
   "comments_cdn",
 ] as const;
+
+export const ZApiRemovalReason = z.object({
+  message: z.string(),
+  id: z.string(),
+  title: z.string(),
+});
+
+export type ApiRemovalReason = z.infer<typeof ZApiRemovalReason>;
