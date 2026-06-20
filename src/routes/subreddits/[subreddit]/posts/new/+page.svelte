@@ -7,39 +7,30 @@
     import { AlertError } from "$lib/components/ui/alert";
     import { Button } from "$lib/components/ui/button";
     import {
-        Checkbox,
         CheckboxGroup,
-        CheckboxLabeled,
+        CheckboxLabeled
     } from "$lib/components/ui/checkbox";
     import * as Field from "$lib/components/ui/field";
     import { Input, InputClearable } from "$lib/components/ui/input";
-    import * as Item from "$lib/components/ui/item";
-    import { Json } from "$lib/components/ui/json";
-    import { Spinner } from "$lib/components/ui/spinner";
-    import { Textarea } from "$lib/components/ui/textarea";
     import type { CreateSubredditPost } from "$lib/types/posts";
+    import { assertSubredditId } from "$lib/types/subreddit";
     import type { PageProps } from "./$types";
-    import Markdown from "svelte-exmarkdown";
 
     let { params, data }: PageProps = $props();
-
-    let subreddit_id = $derived(
-        data.subs.find((s) => s.name === params.subreddit)?.id ?? "<??>",
-    );
 
     let values = $state<CreateSubredditPost>({
         title: "",
         content: "",
-        subreddit: "",
+        subreddit: assertSubredditId(''),
         sticky: 0,
         distinguish: true,
         lock: true,
     });
 
     $effect(() => {
-        values.subreddit = subreddit_id;
+        values.subreddit = data.subreddit.id;
     });
-
+    
     const toggleFlair = (v: boolean) => {
         if (v) {
             values.flair_id = "";

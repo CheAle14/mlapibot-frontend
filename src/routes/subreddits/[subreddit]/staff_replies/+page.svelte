@@ -1,28 +1,23 @@
 <script lang="ts">
     import {
-        fetchStaffRepliesInThread,
         fetchStaffReplyThreads,
-        refreshStaffReplyThread,
+        refreshStaffReplyThread
     } from "$lib/api/staff_replies.remote";
     import { Anchor } from "$lib/components/reuse/anchor";
     import { PagedTable } from "$lib/components/reuse/paged-table";
+    import { Button, PromiseButton } from "$lib/components/ui/button";
     import { TableCell, TableHead, TableRow } from "$lib/components/ui/table";
-    import type { PageReq, PageResp } from "$lib/types/pagination";
+    import type { PageReq } from "$lib/types/pagination";
     import type {
-        StaffReply,
-        StaffReplyThread,
+        StaffReplyThread
     } from "$lib/types/staff_replies";
     import {
         ChevronDown,
         ChevronUp,
-        RefreshCcw,
-        Settings,
+        RefreshCcw
     } from "@lucide/svelte";
-    import type { PageProps } from "../$types";
-    import { Button, PromiseButton } from "$lib/components/ui/button";
     import { toast } from "svelte-sonner";
-    import { Json } from "$lib/components/ui/json";
-    import { Spinner } from "$lib/components/ui/spinner";
+    import type { PageProps } from "./$types";
     import StaffRepliesTable from "./StaffRepliesTable.svelte";
 
     const { params, data }: PageProps = $props();
@@ -34,14 +29,13 @@
         limit: 10,
     });
 
-    let expanded = $state<string | null>(null);
+    const subreddit = $derived(data.subreddit.id);
 
-    const sub = $derived(data.subs.find((s) => s.name === params.subreddit));
+    let expanded = $state<string | null>(null);
 
     const threads = $derived(
         fetchStaffReplyThreads({
-            subreddit_name: params.subreddit,
-            subreddit_id: sub?.id ?? "",
+            subreddit,
             page,
         }),
     );
@@ -60,8 +54,7 @@
             try {
                 return await refreshStaffReplyThread({
                     ...thread,
-                    subreddit_id: sub?.id ?? "",
-                    subreddit_name: params.subreddit,
+                    subreddit,
                 });
             } finally {
                 liveRefreshes--;
@@ -143,8 +136,7 @@
             <TableRow>
                 <TableCell colspan={"100%" as any} class="pl-5">
                     <StaffRepliesTable
-                        subreddit_id={sub?.id ?? ""}
-                        subreddit_name={params.subreddit}
+                        subreddit={data.subreddit}
                         post_id={item.post_id}
                     />
                 </TableCell>

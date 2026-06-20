@@ -17,13 +17,12 @@
     } from "$lib/components/ui/checkbox";
     import * as Field from "$lib/components/ui/field";
     import { Input, InputClearable } from "$lib/components/ui/input";
-    import { Json } from "$lib/components/ui/json";
     import type { SubredditPost } from "$lib/types/posts";
     import type { PageProps } from "./$types";
 
     let { params, data }: PageProps = $props();
 
-    let subreddit_id = $derived(data.subreddit_id);
+    let subreddit_id = $derived(data.subreddit.id);
     let changes = $state<SubredditPost>(data.post);
 
     $effect(() => {
@@ -72,7 +71,7 @@
         publishError = null;
         try {
             const { id } = await publishSubPost({
-                subreddit_id,
+                subreddit: subreddit_id,
                 post_id: changes.id,
             });
             changes.synced_at = changes.updated_at;
@@ -89,7 +88,7 @@
         deleteError = null;
         try {
             await deleteSubPost({
-                subreddit_id,
+                subreddit: subreddit_id,
                 post_id: changes.id,
             });
             await goto(`/subreddits/${params.subreddit}/posts`);

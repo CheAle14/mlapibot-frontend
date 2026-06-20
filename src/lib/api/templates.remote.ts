@@ -1,10 +1,11 @@
-import * as z from "zod";
-import * as db from "$lib/server/database";
 import { query } from "$app/server";
+import * as db from "$lib/server/database";
+import { ZSubredditId } from "$lib/types/subreddit";
 import { error } from "@sveltejs/kit";
+import * as z from "zod";
 import { isModeratorOf } from "./auth.remote";
 
-export const getTemplateStubs = query(z.string(), async (subreddit) => {
+export const getTemplateStubs = query(ZSubredditId, async (subreddit) => {
   if (!(await isModeratorOf(subreddit))) return error(403);
 
   return await db.getSubredditTemplateStubs(subreddit);
@@ -12,7 +13,7 @@ export const getTemplateStubs = query(z.string(), async (subreddit) => {
 
 export const getTemplateInfo = query(
   z.object({
-    subreddit: z.string(),
+    subreddit: ZSubredditId,
     template: z.int32(),
   }),
   async ({ subreddit, template }) => {

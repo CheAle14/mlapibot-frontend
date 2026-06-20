@@ -1,7 +1,8 @@
 import * as z from "zod";
+import { ZSubredditId } from "./subreddit";
 
 export const ZCreateSubredditPost = z.object({
-  subreddit: z.string(),
+  subreddit: ZSubredditId,
   title: z.string(),
   content: z.string(),
   flair_id: z.string().optional(),
@@ -19,6 +20,7 @@ export const ZSubredditPost = ZCreateSubredditPost.extend({
 });
 
 export const ZDbSubredditPost = ZSubredditPost.extend({
+  subreddit: z.string(),
   flair_id: z.string().nullable(),
   flair_text: z.string().nullable(),
   reddit_id: z.string().nullable(),

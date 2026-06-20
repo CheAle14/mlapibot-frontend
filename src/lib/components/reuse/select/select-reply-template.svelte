@@ -1,11 +1,10 @@
 <script lang="ts">
     import { getTemplateStubs } from "$lib/api/templates.remote";
-    import type { CreateOrStubTemplateInfo } from "$lib/types/templates";
     import * as MySelect from "$lib/components/reuse/select";
-    import type { SubredditTemplateStub } from "$lib/types/subreddit";
+    import type { SubredditId, SubredditTemplateStub } from "$lib/types/subreddit";
 
     interface Props {
-        subreddit: string;
+        subreddit: SubredditId;
         deleted_templates?: number[];
 
         value?: number;

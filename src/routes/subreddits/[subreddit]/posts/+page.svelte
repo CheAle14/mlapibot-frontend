@@ -1,16 +1,13 @@
 <script lang="ts">
     import { fetchSubPosts } from "$lib/api/posts.remote";
     import { Button } from "$lib/components/ui/button";
-    import { Json } from "$lib/components/ui/json";
     import Spinner from "$lib/components/ui/spinner/spinner.svelte";
     import * as Table from "$lib/components/ui/table";
     import type { PageProps } from "./$types";
 
     const { params, data }: PageProps = $props();
 
-    const sub = $derived(data.subs.find((s) => s.name === params.subreddit));
-
-    const posts = $derived(fetchSubPosts(sub?.id ?? "<>"));
+    const posts = $derived(fetchSubPosts(data.subreddit.id));
 
     $inspect(posts.current);
 </script>

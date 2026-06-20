@@ -1,29 +1,26 @@
 <script lang="ts">
-    import { Json } from "$lib/components/ui/json";
+    import { getSubredditScams } from "$lib/api/scams.remote";
+    import TableChangesCell from "$lib/components/reuse/table/table-changes-cell.svelte";
+    import ScamInfoCell from "$lib/components/scams/ScamInfoCell.svelte";
+    import ScamTransferModal from "$lib/components/scams/ScamTransferModal.svelte";
+    import TestScamModal from "$lib/components/scams/TestScamModal.svelte";
+    import { Button } from "$lib/components/ui/button";
+    import * as Dialog from "$lib/components/ui/dialog";
+    import * as Spinner from "$lib/components/ui/spinner";
+    import * as Table from "$lib/components/ui/table";
+    import { removeFirstInArrayBy, updateOrInsertInArrayBy } from "$lib/mutate";
     import type {
         CreateOrUpdateScamInfo,
         CreateScamInfo,
-        ScamInfo,
-        UpdateScamInfo,
+        ScamInfo, SubredditId, UpdateScamInfo
     } from "$lib/types/subreddit";
-    import * as Table from "$lib/components/ui/table";
-    import { Button } from "$lib/components/ui/button";
-    import { Badge } from "$lib/components/ui/badge";
-    import * as Dialog from "$lib/components/ui/dialog";
-    import ScamModalContent from "./ScamModalContent.svelte";
-    import { ClipboardCopy, ClipboardPaste } from "@lucide/svelte";
-    import * as Spinner from "$lib/components/ui/spinner";
-    import { getSubredditScams } from "$lib/api/scams.remote";
-    import { removeFirstInArrayBy, updateOrInsertInArrayBy } from "$lib/mutate";
-    import TableChangesCell from "$lib/components/reuse/table/table-changes-cell.svelte";
     import { completeTransfer, initiateTransfer } from "$lib/types/transfer";
+    import { ClipboardCopy, ClipboardPaste } from "@lucide/svelte";
     import { toast } from "svelte-sonner";
-    import ScamTransferModal from "$lib/components/scams/ScamTransferModal.svelte";
-    import ScamInfoCell from "$lib/components/scams/ScamInfoCell.svelte";
-    import TestScamModal from "$lib/components/scams/TestScamModal.svelte";
+    import ScamModalContent from "./ScamModalContent.svelte";
 
     interface ScamsTableProps {
-        subreddit_id: string;
+        subreddit_id: SubredditId;
 
         removal_reasons: Record<string, string>;
         deleted_templates?: number[];

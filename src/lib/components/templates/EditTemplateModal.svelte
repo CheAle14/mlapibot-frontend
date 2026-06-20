@@ -1,14 +1,15 @@
 <script lang="ts">
-    import { useId } from "bits-ui";
-    import * as Dialog from "../ui/dialog";
-    import { Button } from "../ui/button";
-    import TemplateModalContent from "./TemplateModalContent.svelte";
     import { getTemplateInfo } from "$lib/api/templates.remote";
+    import type { SubredditId } from "$lib/types/subreddit";
     import type { EditTemplateInfo } from "$lib/types/templates";
+    import { useId } from "bits-ui";
     import { FormWrapped } from "../reuse/form";
+    import { Button } from "../ui/button";
+    import * as Dialog from "../ui/dialog";
+    import TemplateModalContent from "./TemplateModalContent.svelte";
 
     interface Props {
-        subreddit: string;
+        subreddit: SubredditId;
         id: number;
 
         name?: string;

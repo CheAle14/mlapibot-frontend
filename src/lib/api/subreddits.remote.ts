@@ -1,6 +1,6 @@
 import { form } from "$app/server";
 import * as db from "$lib/server/database";
-import type { Subreddit } from "$lib/types/subreddit";
+import { assertSubredditId, type Subreddit } from "$lib/types/subreddit";
 import { error } from "@sveltejs/kit";
 import * as z from "zod";
 import { isAdmin } from "./auth.remote";
@@ -67,6 +67,6 @@ export const addSubredditModerator = form(
   async ({ subreddit_id, username }) => {
     if (!(await isAdmin())) return error(403);
 
-    await db.addModerator(subreddit_id, username);
+    await db.addModerator(assertSubredditId(subreddit_id), username);
   },
 );

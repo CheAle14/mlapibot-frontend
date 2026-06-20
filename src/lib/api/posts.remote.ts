@@ -8,8 +8,9 @@ import {
 import { error } from "@sveltejs/kit";
 import * as z from "zod";
 import { isModeratorOf } from "./auth.remote";
+import { ZSubredditId } from "$lib/types/subreddit";
 
-export const fetchSubPosts = query(z.string(), async (subreddit_id) => {
+export const fetchSubPosts = query(ZSubredditId, async (subreddit_id) => {
   if (!(await isModeratorOf(subreddit_id))) return error(403);
 
   return await db.getSubredditPosts(subreddit_id);
@@ -17,13 +18,13 @@ export const fetchSubPosts = query(z.string(), async (subreddit_id) => {
 
 export const fetchSubPost = query(
   z.object({
-    subreddit_id: z.string(),
+    subreddit: ZSubredditId,
     post_id: z.number(),
   }),
-  async ({ subreddit_id, post_id }) => {
-    if (!(await isModeratorOf(subreddit_id))) return error(403);
+  async ({ subreddit, post_id }) => {
+    if (!(await isModeratorOf(subreddit))) return error(403);
 
-    return await db.getSubredditPost(subreddit_id, post_id);
+    return await db.getSubredditPost(subreddit, post_id);
   },
 );
 
@@ -43,12 +44,12 @@ export const updateSubPost = command(ZSubredditPost, async (post) => {
 
 export const publishSubPost = command(
   z.object({
-    subreddit_id: z.string(),
+    subreddit: ZSubredditId,
     post_id: z.number(),
   }),
-  async ({ subreddit_id, post_id }) => {
-    if (!(await isModeratorOf(subreddit_id))) return error(403);
-    const post = await db.getSubredditPost(subreddit_id, post_id);
+  async ({ subreddit, post_id }) => {
+    if (!(await isModeratorOf(subreddit))) return error(403);
+    const post = await db.getSubredditPost(subreddit, post_id);
 
     if (!post) {
       error(400, {
@@ -73,11 +74,11 @@ export const publishSubPost = command(
 
 export const deleteSubPost = command(
   z.object({
-    subreddit_id: z.string(),
+    subreddit: ZSubredditId,
     post_id: z.number(),
   }),
-  async ({ subreddit_id, post_id }) => {
-    if (!(await isModeratorOf(subreddit_id))) return error(403);
-    await db.deleteSubPost(subreddit_id, post_id);
+  async ({ subreddit, post_id }) => {
+    if (!(await isModeratorOf(subreddit))) return error(403);
+    await db.deleteSubPost(subreddit, post_id);
   },
 );

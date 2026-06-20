@@ -1,36 +1,34 @@
 <script lang="ts">
-    import * as _ from "moderndash";
-    import type { PageProps } from "./$types";
-    import * as Accordion from "$lib/components/ui/accordion";
-    import * as Field from "$lib/components/ui/field";
-    import { Input, InputClearable, InputList } from "$lib/components/ui/input";
-    import { Checkbox } from "$lib/components/ui/checkbox";
-    import { Switch } from "$lib/components/ui/switch";
-    import { ModuleKeys, type ApiSubredditOptions } from "$lib/types/subreddit";
-    import { Json, JsonMany } from "$lib/components/ui/json";
-    import Module from "./Module.svelte";
+    import { beforeNavigate } from "$app/navigation";
+    import { savePendingChanges } from "$lib/api/changes.remote";
+    import { getSubredditOptions } from "$lib/api/options.remote";
     import {
         RemovalReason,
         SelectIncidentImpact,
     } from "$lib/components/reuse/select";
-    import { Button } from "$lib/components/ui/button";
-    import ScamsTable from "./ScamsTable.svelte";
-    import * as Spinner from "$lib/components/ui/spinner";
-    import RemovalReasons from "./RemovalReasons.svelte";
     import Templates from "$lib/components/templates/Templates.svelte";
-    import { getSubredditOptions } from "$lib/api/options.remote";
-    import { savePendingChanges } from "$lib/api/changes.remote";
-    import StatusStickySettings from "./StatusStickySettings.svelte";
+    import * as Accordion from "$lib/components/ui/accordion";
+    import { Button } from "$lib/components/ui/button";
+    import { Checkbox } from "$lib/components/ui/checkbox";
+    import * as Field from "$lib/components/ui/field";
+    import { Input, InputClearable, InputList } from "$lib/components/ui/input";
+    import { Json } from "$lib/components/ui/json";
+    import * as Spinner from "$lib/components/ui/spinner";
+    import { Switch } from "$lib/components/ui/switch";
+    import { ModuleKeys, type ApiSubredditOptions } from "$lib/types/subreddit";
     import { Check } from "@lucide/svelte";
+    import * as _ from "moderndash";
+    import type { PageProps } from "./$types";
     import ComplexCommentsSettings from "./ComplexCommentsSettings.svelte";
-    import { beforeNavigate } from "$app/navigation";
+    import Module from "./Module.svelte";
+    import RemovalReasons from "./RemovalReasons.svelte";
+    import ScamsTable from "./ScamsTable.svelte";
+    import StatusStickySettings from "./StatusStickySettings.svelte";
 
     const STATUS_URL = "https://discordstatus.com/api/v2";
     const { params, data }: PageProps = $props();
 
-    const subreddit = $derived(
-        data.subs.find((s) => s.name === params.subreddit)?.id ?? "???",
-    );
+    const subreddit = $derived(data.subreddit.id);
 
     const {
         loading: isFetching,

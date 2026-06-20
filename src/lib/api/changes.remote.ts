@@ -1,14 +1,13 @@
 import { command } from "$app/server";
-import * as z from "zod";
 import * as db from "$lib/server/database";
+import { ZApiSubredditOptions, ZSubredditId } from "$lib/types/subreddit";
 import { error } from "@sveltejs/kit";
+import * as z from "zod";
 import { isModeratorOf } from "./auth.remote";
-import { ZApiSubredditOptions } from "$lib/types/subreddit";
 import { getSubredditOptions } from "./options.remote";
 import { getSubredditScams } from "./scams.remote";
 import { getTemplateStubs } from "./templates.remote";
 
-import * as _ from "moderndash";
 
 type AnyArray = any[];
 
@@ -22,7 +21,7 @@ function anyEntries(...arrays: AnyArray[]): boolean {
 
 export const savePendingChanges = command(
   z.object({
-    subreddit: z.string(),
+    subreddit: ZSubredditId,
     changes: ZApiSubredditOptions,
   }),
   async ({ subreddit, changes }) => {

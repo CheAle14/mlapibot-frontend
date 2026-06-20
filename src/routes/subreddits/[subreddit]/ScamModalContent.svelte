@@ -1,35 +1,35 @@
 <script lang="ts">
-    import * as Dialog from "$lib/components/ui/dialog";
-    import { Input, InputClearable } from "$lib/components/ui/input";
+    import { FormWrapped } from "$lib/components/reuse/form";
     import * as Select from "$lib/components/reuse/select";
-    import type { CreateOrUpdateScamInfo } from "$lib/types/subreddit";
-    import { Button } from "$lib/components/ui/button";
-    import * as Field from "$lib/components/ui/field";
-    import { ScamMatcher } from "$lib/components/ui/scam-matcher";
-    import { ScrollArea } from "$lib/components/ui/scroll-area";
-    import * as Accordion from "$lib/components/ui/accordion";
-    import { type IMatcher } from "$lib/types/matcher";
-    import { toast } from "svelte-sonner";
-    import {
-        ClipboardPaste,
-        ClipboardCopy,
-        Shrink,
-        Expand,
-    } from "@lucide/svelte";
     import {
         SelectRemovalReason,
         SelectReplyTemplate,
     } from "$lib/components/reuse/select";
+    import * as Accordion from "$lib/components/ui/accordion";
+    import { Button } from "$lib/components/ui/button";
     import { Checkbox } from "$lib/components/ui/checkbox";
+    import * as Dialog from "$lib/components/ui/dialog";
+    import * as Field from "$lib/components/ui/field";
+    import { Input } from "$lib/components/ui/input";
+    import { ScamMatcher } from "$lib/components/ui/scam-matcher";
+    import { ScrollArea } from "$lib/components/ui/scroll-area";
+    import { type IMatcher } from "$lib/types/matcher";
+    import type { CreateOrUpdateScamInfo, SubredditId } from "$lib/types/subreddit";
+    import {
+        ClipboardCopy,
+        ClipboardPaste,
+        Expand,
+        Shrink,
+    } from "@lucide/svelte";
     import { useId } from "bits-ui";
-    import { FormWrapped } from "$lib/components/reuse/form";
+    import { toast } from "svelte-sonner";
 
     const formId = useId();
 
     let fullscreenMatchers = $state(false);
 
     interface Props {
-        subreddit: string;
+        subreddit: SubredditId;
         deleted_templates?: number[];
         removal_reasons: Record<string, string>;
         item: CreateOrUpdateScamInfo;

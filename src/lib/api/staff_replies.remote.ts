@@ -3,56 +3,54 @@ import { env } from "$env/dynamic/private";
 import * as db from "$lib/server/database";
 import { ZPageReq, type PageResp } from "$lib/types/pagination";
 import type { StaffReply, StaffReplyThread } from "$lib/types/staff_replies";
+import { ZSubredditId } from "$lib/types/subreddit";
 import { error } from "@sveltejs/kit";
-import { sleep } from "moderndash";
 import z from "zod";
 import { isModeratorOf } from "./auth.remote";
 
 export const fetchStaffReplyThreads = query(
   z.object({
-    subreddit_name: z.string(),
-    subreddit_id: z.string(),
+    subreddit: ZSubredditId,
     page: ZPageReq,
   }),
   async ({
-    subreddit_name,
-    subreddit_id,
+    subreddit,
     page,
   }): Promise<PageResp<StaffReplyThread>> => {
-    if (!(await isModeratorOf(subreddit_id))) throw error(401);
-    const threads = await db.getStaffReplyThreads(subreddit_name, page);
+    if (!(await isModeratorOf(subreddit))) throw error(401);
+    const threads = await db.getStaffReplyThreads(subreddit, page);
     return threads;
   },
 );
 
 export const fetchStaffRepliesInThread = query(
   z.object({
-    subreddit_id: z.string(),
+    subreddit: ZSubredditId,
     post_id: z.string(),
     page: ZPageReq,
   }),
-  async ({ subreddit_id, post_id, page }): Promise<PageResp<StaffReply>> => {
-    if (!(await isModeratorOf(subreddit_id))) throw error(401);
+  async ({ subreddit, post_id, page }): Promise<PageResp<StaffReply>> => {
+    if (!(await isModeratorOf(subreddit))) throw error(401);
 
-    await sleep(5000);
-
-    const threads = await db.getStaffRepliesInThread(post_id, page);
+    const threads = await db.getStaffRepliesInThread(subreddit, post_id, page);
     return threads;
   },
 );
 
 export const refreshStaffReplyThread = command(
   z.object({
-    subreddit_id: z.string(),
-    subreddit_name: z.string(),
+    subreddit: ZSubredditId,
     post_id: z.string(),
   }),
-  async (args) => {
-    if (!(await isModeratorOf(args.subreddit_id))) throw error(401);
+  async ({subreddit, post_id}) => {
+    if (!(await isModeratorOf(subreddit))) throw error(401);
 
     const response = await fetch(env.API_URL + `/refresh-staff-reply`, {
       method: "POST",
-      body: JSON.stringify(args),
+      body: JSON.stringify({
+        subreddit_id: subreddit.subreddit_id,
+        post_id
+      }),
     });
 
     console.log(response);

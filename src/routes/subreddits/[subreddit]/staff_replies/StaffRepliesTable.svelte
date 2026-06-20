@@ -2,20 +2,20 @@
     import { fetchStaffRepliesInThread } from "$lib/api/staff_replies.remote";
     import { Anchor } from "$lib/components/reuse/anchor";
     import { PagedTable } from "$lib/components/reuse/paged-table";
-    import { TableRow, TableCell, TableHead } from "$lib/components/ui/table";
+    import * as Item from "$lib/components/ui/item";
+    import { Skeleton } from "$lib/components/ui/skeleton";
+    import { TableCell, TableHead, TableRow } from "$lib/components/ui/table";
     import type { PageReq } from "$lib/types/pagination";
     import type { StaffReply } from "$lib/types/staff_replies";
-    import * as Item from "$lib/components/ui/item";
+    import type { SidebarSubreddit } from "$lib/types/subreddit";
     import Markdown from "svelte-exmarkdown";
-    import { Skeleton } from "$lib/components/ui/skeleton";
 
     interface Props {
-        subreddit_name: string;
-        subreddit_id: string;
+        subreddit: SidebarSubreddit;
         post_id: string;
     }
 
-    let { subreddit_name, subreddit_id, post_id }: Props = $props();
+    let { subreddit, post_id }: Props = $props();
 
     let page = $state<PageReq>({
         page: 0,
@@ -24,7 +24,7 @@
 
     let query = $derived(
         fetchStaffRepliesInThread({
-            subreddit_id,
+            subreddit: subreddit.id,
             post_id,
             page,
         }),
@@ -60,7 +60,7 @@
                 <TableRow>
                     <TableCell>
                         <Anchor
-                            href={`https://reddit.com/r/${subreddit_name}/comments/${post_id}/-/${item.comment_id}`}
+                            href={`https://reddit.com/r/${subreddit.name}/comments/${post_id}/-/${item.comment_id}`}
                         >
                             {item.comment_id}
                         </Anchor>

@@ -1,6 +1,5 @@
 <script lang="ts">
     import * as MySelect from "$lib/components/reuse/select";
-    import * as Select from "$lib/components/ui/select";
     import type { StatusIncidentImpact } from "$lib/types/subreddit";
 
     interface Props {

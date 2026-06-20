@@ -11,10 +11,12 @@ import {
   type StaffReplyThread,
 } from "$lib/types/staff_replies";
 import {
+  assertSubredditId,
   type ApiSubredditOptions,
   type ScamInfo,
   type SidebarSubreddit,
   type Subreddit,
+  type SubredditId,
   type SubredditTemplateStub
 } from "$lib/types/subreddit";
 import type { TemplateInfo } from "$lib/types/templates";
@@ -56,7 +58,7 @@ export async function getUserByCookie(cookie: string) {
   return result;
 }
 
-export async function addModerator(subreddit_id: string, username: string) {
+export async function addModerator({ subreddit_id }: SubredditId, username: string) {
   await sql`
     INSERT INTO subreddit_mods (subreddit_id, username)
     VALUES (${subreddit_id}, ${username});
@@ -64,7 +66,7 @@ export async function addModerator(subreddit_id: string, username: string) {
 }
 
 export async function isUserModeratorOf(
-  subreddit_id: string,
+  { subreddit_id }: SubredditId,
   username: string,
 ) {
   const [row]: [{ count: number }?] = await sql`
@@ -102,24 +104,24 @@ function mapDataToOptions(sub: Subreddit): ApiSubredditOptions {
 }
 
 export async function getSubredditNameById(
-  id: string,
+  {subreddit_id}: SubredditId,
 ): Promise<string | undefined> {
   const [sub]: [{ name: string }?] = await sql`
     SELECT name
     FROM subreddits sub
-    WHERE sub.id=${id}
+    WHERE sub.id=${subreddit_id}
     `;
 
   return sub?.name;
 }
 
 export async function getSubredditData(
-  subreddit: string,
+  {subreddit_id}: SubredditId,
 ): Promise<ApiSubredditOptions | undefined> {
   const [sub]: [Subreddit?] = await sql`
     SELECT *
     FROM subreddits sub
-    WHERE sub.id=${subreddit}
+    WHERE sub.id=${subreddit_id}
     `;
 
   if (sub) {
@@ -149,19 +151,21 @@ export async function getSidebarSubreddits(
       ORDER BY sub.name`;
 
     return all_subs.map((sub) => ({
-      ...sub,
+      id: assertSubredditId(sub.id),
+      name: sub.name,
       is_mod: mod_subs.some((m) => m.id === sub.id),
     }));
   } else {
     return mod_subs.map((sub) => ({
-      ...sub,
+      id: assertSubredditId(sub.id),
+      name: sub.name,
       is_mod: true,
     }));
   }
 }
 
 export async function getSubredditTemplateStubs(
-  subreddit_id: string,
+  {subreddit_id}: SubredditId,
 ): Promise<SubredditTemplateStub[]> {
   const results = await sql<SubredditTemplateStub[]>`
     SELECT id, name
@@ -174,7 +178,7 @@ export async function getSubredditTemplateStubs(
 }
 
 export async function getSubredditTemplate(
-  subreddit_id: string,
+  {subreddit_id}: SubredditId,
   id: number,
 ): Promise<TemplateInfo | undefined> {
   const [result]: [TemplateInfo?] = await sql`
@@ -188,7 +192,7 @@ export async function getSubredditTemplate(
 }
 
 export async function getSubredditScamRules(
-  subreddit_id: string,
+  {subreddit_id}: SubredditId,
 ): Promise<ScamInfo[]> {
   const results = await sql<ScamInfo[]>`
     SELECT *
@@ -224,14 +228,14 @@ export async function getSubredditScamRules(
 type AppliedResult = { ok: ApiSubredditOptions } | { error: string };
 
 export async function tryApplyPendingChanges(
-  id: string,
+  {subreddit_id}: SubredditId,
   changes: ApiSubredditOptions,
 ): Promise<AppliedResult> {
   const result = await sql.begin(async (sql) => {
     const [subreddit]: [Subreddit?] = await sql`
         SELECT *
         FROM subreddits
-        WHERE id=${id}
+        WHERE id=${subreddit_id}
         FOR UPDATE`;
 
     if (!subreddit) {
@@ -405,7 +409,7 @@ export async function tryApplyPendingChanges(
   });
 
   if (result.ok !== undefined) {
-    await sql.notify("mlapibot", JSON.stringify({ type: "subreddit", id }));
+    await sql.notify("mlapibot", JSON.stringify({ type: "subreddit", subreddit_id }));
   }
 
   return result;
@@ -416,6 +420,7 @@ export async function createSubredditPost(
 ): Promise<SubredditPost> {
   const data = {
     ...create,
+    subreddit_id: create.subreddit.subreddit_id,
     flair_id: create.flair_id ?? null,
     flair_text: create.flair_text ?? null,
   };
@@ -429,7 +434,7 @@ export async function createSubredditPost(
 }
 
 export async function getSubredditPosts(
-  subreddit_id: string,
+  {subreddit_id}: SubredditId,
 ): Promise<SubredditPostStub[]> {
   const posts = await sql<SubredditPostStub[]>`
     SELECT id, reddit_id, title
@@ -447,6 +452,7 @@ function mapSubredditPost(db: DbSubredditPost): SubredditPost {
 
   return {
     ...simple,
+    subreddit: assertSubredditId(db.subreddit),
     flair_id: flair_id ?? undefined,
     flair_text: flair_text ?? undefined,
     reddit_id: reddit_id ?? undefined,
@@ -456,7 +462,7 @@ function mapSubredditPost(db: DbSubredditPost): SubredditPost {
 }
 
 export async function getSubredditPost(
-  subreddit_id: string,
+  {subreddit_id}: SubredditId,
   post_id: number,
 ): Promise<SubredditPost | undefined> {
   const [post]: [DbSubredditPost?] = await sql`
@@ -489,34 +495,34 @@ export async function updateSubredditPost(
   const [updated]: [DbSubredditPost] = await sql`
     UPDATE subreddit_posts
     SET updated_at=CURRENT_TIMESTAMP, ${sql(changes)}
-    WHERE subreddit=${post.subreddit} AND id=${post.id}
+    WHERE subreddit=${post.subreddit.subreddit_id} AND id=${post.id}
     RETURNING *
   `;
 
   return mapSubredditPost(updated);
 }
 
-export async function deleteSubPost(subreddit_id: string, post_id: number) {
+export async function deleteSubPost({subreddit_id}: SubredditId, post_id: number) {
   await sql`
       DELETE FROM subreddit_posts
       WHERE subreddit=${subreddit_id} AND id=${post_id}`;
 }
 
 export async function getStaffReplyThreads(
-  subreddit_name: string,
+  {subreddit_id}: SubredditId,
   page: PageReq,
 ): Promise<PageResp<StaffReplyThread>> {
   const rows = await sql<StaffReplyThread[]>`
     SELECT *
     FROM staff_reply_threads
-    WHERE subreddit=${subreddit_name}
+    WHERE subreddit_id=${subreddit_id}
     ORDER BY created_at DESC
     OFFSET ${page.page * page.limit}
     LIMIT ${page.limit}`;
 
   const [row]: [{ count: number }?] = await sql`
     SELECT COUNT(*) as count FROM staff_reply_threads
-    WHERE subreddit=${subreddit_name}
+    WHERE subreddit_id=${subreddit_id}
   `;
 
   return {
@@ -526,13 +532,14 @@ export async function getStaffReplyThreads(
 }
 
 export async function getStaffRepliesInThread(
+  {subreddit_id}: SubredditId,
   post_id: string,
   page: PageReq,
 ): Promise<PageResp<StaffReply>> {
   const rows = await sql<StaffReply[]>`
     SELECT *
     FROM staff_replies
-    WHERE post_id=${post_id}
+    WHERE post_id=${post_id} AND subreddit_id=${subreddit_id}
     ORDER BY created_at DESC
     OFFSET ${page.page * page.limit}
     LIMIT ${page.limit}`;

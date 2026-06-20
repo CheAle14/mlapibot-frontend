@@ -1,6 +1,14 @@
 import * as z from "zod";
 import { ZCreateTemplateInfo, ZEditTemplateInfo } from "./templates";
 
+
+export const ZSubredditId = z.object({ subreddit_id: z.string() }).brand<"id">();
+export type SubredditId = z.infer<typeof ZSubredditId>;
+
+export function assertSubredditId(subreddit_id: string): SubredditId {
+  return ZSubredditId.parse({subreddit_id});
+}
+
 const ZRemovalReason = z.string();
 
 export const ZScamInfo = z.object({
@@ -95,6 +103,8 @@ export const ZStatusIncidentImpact = z.enum([
   "critical",
 ]);
 
+export type StatusIncidentImpact = z.infer<typeof ZStatusIncidentImpact>;
+
 export const ZStatusStickyConfig = z.object({
   replace_sticky: z.string().optional(),
   comment_threshold: z.int32().min(0),
@@ -151,7 +161,7 @@ export const ZCreateOrUpdateScamInfo = z.discriminatedUnion("id", [
 export type CreateOrUpdateScamInfo = z.infer<typeof ZCreateOrUpdateScamInfo>;
 
 export interface SidebarSubreddit {
-  id: string;
+  id: SubredditId;
   name: string;
   is_mod: boolean;
 }

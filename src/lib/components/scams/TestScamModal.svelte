@@ -7,6 +7,7 @@
         GotAnalysis,
         GotRedditPost
     } from "$lib/types/api";
+    import { assertSubredditId, type SubredditId } from "$lib/types/subreddit";
     import { SendHorizonal } from "@lucide/svelte";
     import { useId } from "bits-ui";
     import { FormWrapped } from "../reuse/form";
@@ -20,7 +21,7 @@
     import TestScamResultsModal from "./TestScamResultsModal.svelte";
 
     interface Props {
-        subreddit_id: string;
+        subreddit_id: SubredditId;
         onClose(): void;
     }
 
@@ -56,7 +57,7 @@
                 state: "manual",
                 author: "",
                 id: "",
-                subreddit_id,
+                subreddit_id: subreddit_id.subreddit_id,
                 title: "",
                 body: "",
             };
@@ -80,7 +81,7 @@
         firstModal = {
             state: "manual",
             ...post,
-            subreddit_id,
+            subreddit_id: subreddit_id.subreddit_id,
         };
     };
 
@@ -89,7 +90,10 @@
         isPending = true;
         isError = false;
         try {
-            secondModal = await fetchScamAnalysisResult(post);
+            secondModal = await fetchScamAnalysisResult({
+                ...post,
+                subreddit: assertSubredditId(post.subreddit_id)
+            });
         } catch {
             isError = true;
         } finally {

@@ -1,21 +1,20 @@
 <script lang="ts">
-    import { Json } from "$lib/components/ui/json";
-    import { Spinner } from "$lib/components/ui/spinner";
     import { getTemplateStubs } from "$lib/api/templates.remote";
-    import * as Table from "$lib/components/ui/table";
     import { Button } from "$lib/components/ui/button";
-    import { Dialog } from "bits-ui";
-    import NewTemplateModal from "./NewTemplateModal.svelte";
+    import { Spinner } from "$lib/components/ui/spinner";
+    import * as Table from "$lib/components/ui/table";
+    import type { SubredditId, SubredditTemplateStub } from "$lib/types/subreddit";
     import {
         type CreateTemplateInfo,
         type EditTemplateInfo,
     } from "$lib/types/templates";
-    import TemplateRow from "./TemplateRow.svelte";
-    import type { SubredditTemplateStub } from "$lib/types/subreddit";
+    import { Dialog } from "bits-ui";
     import EditTemplateModal from "./EditTemplateModal.svelte";
+    import NewTemplateModal from "./NewTemplateModal.svelte";
+    import TemplateRow from "./TemplateRow.svelte";
 
     interface Props {
-        subreddit: string;
+        subreddit: SubredditId;
 
         creates?: CreateTemplateInfo[];
         updates?: EditTemplateInfo[];
