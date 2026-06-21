@@ -19,8 +19,6 @@
 
     let { subreddit, original, current = $bindable() }: Props = $props();
 
-    const apiReasons = $derived(fetchRemovalReasons(subreddit.id));
-
     const deleteItem = (key: string) => {
         delete current[key];
         console.log("deleted", key);
@@ -37,56 +35,50 @@
         ...current,
     });
 
+    const query = $derived(fetchRemovalReasons(subreddit.id));
+
     const handleCreateReason = () => {
         return new Promise<void>((resolve, reject) => {
-            const opened = window.open(`https://sh.reddit.com/mod/${subreddit.name}/saved-responses/removals`, 'CreateRemovalReason');
+            const opened = window.open(
+                `https://sh.reddit.com/mod/${subreddit.name}/saved-responses/removals`,
+                "CreateRemovalReason"
+            );
 
             if (opened) {
                 let interval = setInterval(() => {
                     if (opened.closed) {
                         clearInterval(interval);
-                        apiReasons.refresh().then(resolve).catch(reject);
+
+                        query.refresh().then(resolve).catch(reject);
                     }
                 }, 1000);
             } else {
                 reject();
             }
         });
-
     };
+
+    const apiReasons = $derived(await query);
 </script>
 
 {#if modalOpen}
     <Dialog.Root bind:open={modalOpen}>
         <RemReasonModal
             onSubmit={(alias) => {
-                current[alias] = apiReasons.current?.at(0)?.id ?? 'set-id-here';
+                current[alias] = apiReasons?.at(0)?.id ?? "set-id-here";
                 modalOpen = false;
             }}
         />
     </Dialog.Root>
 {/if}
 
-{#if apiReasons.error}
-    <Alert.Root variant="destructive" class="my-10">
-        <CircleAlert />
-        <Alert.Title>Failed to fetch removal reasons from Reddit</Alert.Title>
-
-        <Alert.Description>An error has occured whilst trying to fetch the removal reasons from Reddit.</Alert.Description>
-
-        
-        <Alert.Action>
-            <PromiseButton onclick={() => apiReasons.refresh()} size="sm" errorTickTimeMs={2500}>
-                Retry
-            </PromiseButton>
-        </Alert.Action>
-    </Alert.Root>
-{:else if apiReasons.current?.length === 0}
+{#if apiReasons.length === 0}
     <Alert.Root class="my-10">
         <CircleAlert />
         <Alert.Title>No removal reasons from Reddit</Alert.Title>
         <Alert.Description>
-                Reddit has not returned any removal reasons to populate the options below.
+            Reddit has not returned any removal reasons to populate the options
+            below.
         </Alert.Description>
 
         <Alert.Action>
@@ -110,7 +102,7 @@
             {@const created = original[alias] === undefined}
             {@const updated = original[alias] !== current[alias]}
             {@const deleted = current[alias] === undefined}
-            {@const fromApi = apiReasons?.current?.find(s => s.id === reason_id)}
+            {@const fromApi = apiReasons.find((s) => s.id === reason_id)}
 
             <Table.Row class={[deleted && "line-through"]}>
                 <TableChangesCell {deleted} {updated} {created} />
@@ -118,39 +110,35 @@
                     {alias}
                 </Table.Cell>
                 <Table.Cell>
-                    {#if apiReasons.current === undefined}
-                        {reason_id}
-                    {:else}
-                        <Select.Root 
-                            type="single" 
-                            bind:value={() => reason_id, (newId) => current[alias] = newId}
-                        >
-                            <Select.Trigger
-                                class="lg:min-w-md"
-                            >
-                                {#if fromApi}
-                                    {fromApi.title}
-                                {:else}
-                                    <X />
+                    <Select.Root
+                        type="single"
+                        bind:value={
+                            () => reason_id, (newId) => (current[alias] = newId)
+                        }
+                    >
+                        <Select.Trigger class="lg:min-w-md">
+                            {#if fromApi}
+                                {fromApi.title}
+                            {:else}
+                                <X />
 
-                                    {reason_id}
-                                {/if}
-                            </Select.Trigger>
+                                {reason_id}
+                            {/if}
+                        </Select.Trigger>
 
-                            <Select.Content>
-                                <Select.Label>Reasons</Select.Label>
+                        <Select.Content>
+                            <Select.Label>Reasons</Select.Label>
 
-                                {#each apiReasons.current as reason (reason.id)}
-                                    <Select.Item 
-                                        value={reason.id}
-                                        label={reason.title}
-                                    >
-                                        {reason.title}
-                                    </Select.Item>
-                                {/each}
-                            </Select.Content>
-                        </Select.Root>
-                    {/if}
+                            {#each apiReasons as reason (reason.id)}
+                                <Select.Item
+                                    value={reason.id}
+                                    label={reason.title}
+                                >
+                                    {reason.title}
+                                </Select.Item>
+                            {/each}
+                        </Select.Content>
+                    </Select.Root>
                 </Table.Cell>
                 <Table.Cell class="flex justify-end  gap-2">
                     {#if deleted}
@@ -158,10 +146,10 @@
                             class="float-end"
                             variant="outline"
                             size="icon-sm"
-                            onclick={() => undeleteItem(alias)}>
-                                <Undo />
-                            </Button
+                            onclick={() => undeleteItem(alias)}
                         >
+                            <Undo />
+                        </Button>
                     {:else}
                         <Button
                             class="float-end"
@@ -169,7 +157,7 @@
                             size="icon-sm"
                             onclick={() => deleteItem(alias)}
                         >
-                            <Trash />    
+                            <Trash />
                         </Button>
                     {/if}
                 </Table.Cell>
@@ -183,11 +171,10 @@
                     size="icon-sm"
                     class="float-end"
                     variant="outline"
-                    onclick={() => modalOpen = true}
+                    onclick={() => (modalOpen = true)}
                 >
                     <Plus />
-                </Button
-                >
+                </Button>
             </Table.Cell>
         </Table.Row>
     </Table.Footer>

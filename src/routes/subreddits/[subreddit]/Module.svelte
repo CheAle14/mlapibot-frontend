@@ -1,8 +1,7 @@
 <script lang="ts" generics="T extends keyof ApiSubredditModules">
-    import * as _ from "moderndash";
-    import * as Accordion from "$lib/components/ui/accordion";
-    import { Switch } from "$lib/components/ui/switch";
+    import { AccordionBoundary } from "$lib/components/reuse/accordion";
     import { Label } from "$lib/components/ui/label";
+    import { Switch } from "$lib/components/ui/switch";
     import type {
         ApiSubredditModules,
         ApiSubredditOptions,
@@ -12,7 +11,6 @@
     interface SnippetArgs<T extends keyof ApiSubredditModules> {
         current: ApiSubredditOptions[T];
         original: ApiSubredditOptions[T];
-        open: boolean;
     }
 
     interface ModuleProps<T extends keyof ApiSubredditModules> {
@@ -40,32 +38,30 @@
     let mcurrent = $derived(current[key]);
 </script>
 
-<Accordion.Item value={key}>
-    <Accordion.Trigger>
-        {#snippet outside()}
-            <Switch
-                id={key}
-                checked={mcurrent.enabled}
-                onclick={(e) => {
-                    mcurrent.enabled = !mcurrent.enabled;
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }}
-            />
-        {/snippet}
-        <Label>{title}</Label>
-    </Accordion.Trigger>
+{#snippet triggerOutside()}
+    <Switch
+        id={key}
+        checked={mcurrent.enabled}
+        onclick={(e) => {
+            mcurrent.enabled = !mcurrent.enabled;
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }}
+    />
+{/snippet}
 
-    <Accordion.Content class="pl-2">
-        {#if children}
-            {@render children({
-                current: mcurrent,
-                original: moriginal,
-                open: open?.some((s) => s === key),
-            })}
-        {:else}
-            There are no options for this module.
-        {/if}
-    </Accordion.Content>
-</Accordion.Item>
+<AccordionBoundary {open} value={key} {triggerOutside} arrow="left">
+    {#snippet trigger()}
+        <Label>{title}</Label>
+    {/snippet}
+
+    {#if children}
+        {@render children({
+            current: mcurrent,
+            original: moriginal,
+        })}
+    {:else}
+        There are no options for this module.
+    {/if}
+</AccordionBoundary>

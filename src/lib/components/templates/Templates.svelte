@@ -1,9 +1,11 @@
 <script lang="ts">
     import { getTemplateStubs } from "$lib/api/templates.remote";
     import { Button } from "$lib/components/ui/button";
-    import { Spinner } from "$lib/components/ui/spinner";
     import * as Table from "$lib/components/ui/table";
-    import type { SubredditId, SubredditTemplateStub } from "$lib/types/subreddit";
+    import type {
+        SubredditId,
+        SubredditTemplateStub,
+    } from "$lib/types/subreddit";
     import {
         type CreateTemplateInfo,
         type EditTemplateInfo,
@@ -28,10 +30,10 @@
         deletes = $bindable(),
     }: Props = $props();
 
-    const stubs = $derived(getTemplateStubs(subreddit));
+    const stubs = $derived(await getTemplateStubs(subreddit));
     let modalNewItem = $state<CreateTemplateInfo | null>(null);
     let modalEditItem = $state<SubredditTemplateStub | EditTemplateInfo | null>(
-        null,
+        null
     );
 
     const onAddNew = (v: CreateTemplateInfo) => {
@@ -100,68 +102,62 @@
     {/if}
 </Dialog.Root>
 
-{#if stubs.loading}
-    <Spinner />
-{:else}
-    <Table.Root>
-        <Table.Header>
-            <Table.Row>
-                <Table.Head class="w-1"></Table.Head>
-                <Table.Head>Name</Table.Head>
-                <Table.Head class="w-1">Actions</Table.Head>
-            </Table.Row>
-        </Table.Header>
+<Table.Root>
+    <Table.Header>
+        <Table.Row>
+            <Table.Head class="w-1"></Table.Head>
+            <Table.Head>Name</Table.Head>
+            <Table.Head class="w-1">Actions</Table.Head>
+        </Table.Row>
+    </Table.Header>
 
-        <Table.Body>
-            {#each stubs.current as stub}
-                {@const changes = updates?.find((s) => s.id === stub.id)}
+    <Table.Body>
+        {#each stubs as stub (stub.id)}
+            {@const changes = updates?.find((s) => s.id === stub.id)}
 
-                <TemplateRow
-                    item={stub}
-                    {changes}
-                    bind:deleted={
-                        () => !!deletes && deletes.indexOf(stub.id) !== -1,
-                        (v) => {
-                            if (v) {
-                                if (deletes) {
-                                    deletes.push(stub.id);
-                                } else {
-                                    deletes = [stub.id];
-                                }
-                            } else if (deletes) {
-                                deletes = deletes.filter((s) => s !== stub.id);
+            <TemplateRow
+                item={stub}
+                {changes}
+                bind:deleted={
+                    () => !!deletes && deletes.indexOf(stub.id) !== -1,
+                    (v) => {
+                        if (v) {
+                            if (deletes) {
+                                deletes.push(stub.id);
+                            } else {
+                                deletes = [stub.id];
                             }
+                        } else if (deletes) {
+                            deletes = deletes.filter((s) => s !== stub.id);
                         }
                     }
-                    openModal={() => (modalEditItem = changes ?? stub)}
-                />
-            {/each}
+                }
+                openModal={() => (modalEditItem = changes ?? stub)}
+            />
+        {/each}
 
-            {#each creates as created}
-                <TemplateRow
-                    item={created}
-                    bind:deleted={() => false, () => deleteNewItem(created.id)}
-                    openModal={() => (modalNewItem = created)}
-                />
-            {/each}
-        </Table.Body>
-        <Table.Footer>
-            <Table.Row>
-                <Table.Cell colspan={3}>
-                    <Button
-                        class="float-end"
-                        size="sm"
-                        onclick={() =>
-                            (modalNewItem = {
-                                id: crypto.randomUUID(),
-                                name: "",
-                                content: "",
-                            })}>New</Button
-                    >
-                </Table.Cell>
-            </Table.Row>
-        </Table.Footer>
-    </Table.Root>
-
-    <ul></ul>
-{/if}
+        {#each creates as created}
+            <TemplateRow
+                item={created}
+                bind:deleted={() => false, () => deleteNewItem(created.id)}
+                openModal={() => (modalNewItem = created)}
+            />
+        {/each}
+    </Table.Body>
+    <Table.Footer>
+        <Table.Row>
+            <Table.Cell colspan={3}>
+                <Button
+                    class="float-end"
+                    size="sm"
+                    onclick={() =>
+                        (modalNewItem = {
+                            id: crypto.randomUUID(),
+                            name: "",
+                            content: "",
+                        })}>New</Button
+                >
+            </Table.Cell>
+        </Table.Row>
+    </Table.Footer>
+</Table.Root>

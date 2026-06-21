@@ -6,13 +6,14 @@
     import TestScamModal from "$lib/components/scams/TestScamModal.svelte";
     import { Button } from "$lib/components/ui/button";
     import * as Dialog from "$lib/components/ui/dialog";
-    import * as Spinner from "$lib/components/ui/spinner";
     import * as Table from "$lib/components/ui/table";
     import { removeFirstInArrayBy, updateOrInsertInArrayBy } from "$lib/mutate";
     import type {
         CreateOrUpdateScamInfo,
         CreateScamInfo,
-        ScamInfo, SubredditId, UpdateScamInfo
+        ScamInfo,
+        SubredditId,
+        UpdateScamInfo,
     } from "$lib/types/subreddit";
     import { completeTransfer, initiateTransfer } from "$lib/types/transfer";
     import { ClipboardCopy, ClipboardPaste } from "@lucide/svelte";
@@ -43,11 +44,12 @@
         deletes = $bindable(),
     }: ScamsTableProps = $props();
 
-    const fetchScams = $derived(getSubredditScams(subreddit_id));
+    const fetchScamsQuery = $derived(getSubredditScams(subreddit_id));
+    const fetchScams = $derived(await fetchScamsQuery);
 
     function mergeScamUpdates(
         scam: ScamInfo,
-        updates: UpdateScamInfo[],
+        updates: UpdateScamInfo[]
     ): [boolean, ScamInfo] {
         const update = updates.find((u) => u.id === scam.id);
         if (update) {
@@ -85,11 +87,9 @@
     };
 
     const onInitiateTransfer = () => {
-        const items = (fetchScams.current ?? []).map(
-            ({ template, ...item }) => {
-                return item;
-            },
-        );
+        const items = (fetchScams ?? []).map(({ template, ...item }) => {
+            return item;
+        });
 
         const data = initiateTransfer(items);
         navigator.clipboard.writeText(data);
@@ -132,10 +132,10 @@
 
 {#if modalTransfer}
     <Dialog.Root bind:open={() => true, (v) => (modalTransfer = null)}>
-        {#if modalTransfer && fetchScams.current}
+        {#if modalTransfer && fetchScams}
             <ScamTransferModal
                 bind:transferred={modalTransfer}
-                existing={fetchScams.current ?? []}
+                existing={fetchScams}
                 {updateScam}
                 {createScam}
                 onClose={() => (modalTransfer = null)}
@@ -160,15 +160,7 @@
         </Table.Row>
     </Table.Header>
     <Table.Body>
-        {#if fetchScams.loading}
-            <Table.Row>
-                <Table.Cell colspan={4}>
-                    <Spinner.Badge>Fetching rules</Spinner.Badge>
-                </Table.Cell>
-            </Table.Row>
-        {/if}
-
-        {#each fetchScams.current as original (original.id)}
+        {#each fetchScams as original (original.id)}
             {@const deleted = deletes.indexOf(original.id) !== -1}
             {@const [updated, scam] = mergeScamUpdates(original, updates)}
 

@@ -2,6 +2,7 @@
     import { beforeNavigate } from "$app/navigation";
     import { savePendingChanges } from "$lib/api/changes.remote";
     import { getSubredditOptions } from "$lib/api/options.remote";
+    import { AccordionBoundary } from "$lib/components/reuse/accordion";
     import {
         RemovalReason,
         SelectIncidentImpact,
@@ -49,7 +50,7 @@
     };
 
     let sendPendingState = $state<"idle" | "sending" | "error" | "success">(
-        "idle",
+        "idle"
     );
 
     const sendPendingChanges = async () => {
@@ -90,7 +91,7 @@
             if (nav.to?.route.id) {
                 // client-side routing
                 const confirmed = confirm(
-                    "You have unsaved changes. Are you sure you wish to leave?",
+                    "You have unsaved changes. Are you sure you wish to leave?"
                 );
 
                 if (!confirmed) {
@@ -175,38 +176,34 @@
 
     {#if options && changes}
         <Accordion.Root type="multiple" class="" bind:value={open}>
-            <Accordion.Item value="removal_reasons">
-                <Accordion.Trigger>Removal reasons map</Accordion.Trigger>
+            <AccordionBoundary {open} value="removal_reasons" arrow="left">
+                {#snippet trigger()}
+                    Removal reasons map
+                {/snippet}
 
-                <Accordion.Content class="pl-2">
-                    <p>
-                        These aliases are primarily to allow OCR rules to be
-                        copy-pasted between a test subreddit and this one
-                    </p>
-                    {#if open.indexOf("removal_reasons") !== -1}
-                        <RemovalReasons
-                            subreddit={data.subreddit}
-                            original={options.removal_reasons}
-                            bind:current={changes.removal_reasons}
-                        />
-                    {/if}
-                </Accordion.Content>
-            </Accordion.Item>
+                <p>
+                    These aliases are primarily to allow OCR rules to be
+                    copy-pasted between a test subreddit and this one
+                </p>
+                <RemovalReasons
+                    subreddit={data.subreddit}
+                    original={options.removal_reasons}
+                    bind:current={changes.removal_reasons}
+                />
+            </AccordionBoundary>
 
-            <Accordion.Item value="templates">
-                <Accordion.Trigger>Post reply templates</Accordion.Trigger>
+            <AccordionBoundary {open} value="templates" arrow="left">
+                {#snippet trigger()}
+                    Post reply templates
+                {/snippet}
 
-                <Accordion.Content class="pl-2">
-                    {#if open.indexOf("templates") !== -1}
-                        <Templates
-                            {subreddit}
-                            bind:updates={changes.templates.updates}
-                            bind:creates={changes.templates.creates}
-                            bind:deletes={changes.templates.deletes}
-                        />
-                    {/if}
-                </Accordion.Content>
-            </Accordion.Item>
+                <Templates
+                    {subreddit}
+                    bind:updates={changes.templates.updates}
+                    bind:creates={changes.templates.creates}
+                    bind:deletes={changes.templates.deletes}
+                />
+            </AccordionBoundary>
 
             <Module
                 key="scams"
@@ -215,17 +212,15 @@
                 bind:current={changes}
                 original={options}
             >
-                {#snippet children({ open, current })}
-                    {#if open}
-                        <ScamsTable
-                            removal_reasons={changes?.removal_reasons ?? {}}
-                            deleted_templates={changes?.templates.deletes}
-                            updates={current.update}
-                            creates={current.create}
-                            deletes={current.deletes}
-                            subreddit_id={subreddit}
-                        />
-                    {/if}
+                {#snippet children({ current })}
+                    <ScamsTable
+                        removal_reasons={changes?.removal_reasons ?? {}}
+                        deleted_templates={changes?.templates.deletes}
+                        updates={current.update}
+                        creates={current.create}
+                        deletes={current.deletes}
+                        subreddit_id={subreddit}
+                    />
 
                     <div class="w-full max-w-md">
                         <Field.Set>
@@ -441,7 +436,7 @@
                 bind:current={changes}
                 original={options}
             >
-                {#snippet children({ open, current })}
+                {#snippet children({ current })}
                     <div class="w-full max-w-md">
                         <Field.Group>
                             <Field.Set>
@@ -494,7 +489,7 @@
                 bind:current={changes}
                 original={options}
             >
-                {#snippet children({ open, current })}
+                {#snippet children({ current })}
                     <div class="w-full max-w-md">
                         <Field.Group>
                             <Field.Set>
