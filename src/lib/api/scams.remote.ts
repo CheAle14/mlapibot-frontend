@@ -40,7 +40,10 @@ export const fetchScamAnalysisResult = command(
     console.log("Sending for analysis", data);
     const result = await fetch(env.API_URL + "/analyze", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        subreddit_id: data.subreddit.subreddit_id,
+      }),
     });
 
     if (!result.ok) {
