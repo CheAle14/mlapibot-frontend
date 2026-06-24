@@ -1,13 +1,12 @@
 <script lang="ts">
-    import "./layout.css";
     import { Toaster } from "$lib/components/ui/sonner/index.js";
+    import "./layout.css";
 
     import favicon from "$lib/assets/favicon.svg";
-    import type { LayoutProps } from "./$types";
-    import * as Sidebar from "$lib/components/ui/sidebar";
     import * as Collapsible from "$lib/components/ui/collapsible";
+    import * as Sidebar from "$lib/components/ui/sidebar";
     import { ChevronDown, Shield } from "@lucide/svelte";
-    import { page } from "$app/state";
+    import type { LayoutProps } from "./$types";
 
     let { children, data }: LayoutProps = $props();
 </script>
@@ -111,6 +110,19 @@
                                                     {...props}
                                                 >
                                                     Staff Replies
+                                                </a>
+                                            {/snippet}
+                                        </Sidebar.MenuSubButton>
+                                    </Sidebar.MenuSubItem>
+
+                                    <Sidebar.MenuSubItem>
+                                        <Sidebar.MenuSubButton>
+                                            {#snippet child({ props })}
+                                                <a
+                                                    href={href + "/moderators"}
+                                                    {...props}
+                                                >
+                                                    Moderators
                                                 </a>
                                             {/snippet}
                                         </Sidebar.MenuSubButton>

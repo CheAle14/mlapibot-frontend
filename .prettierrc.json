@@ -1,4 +1,5 @@
 {
     "bracketSameLine": false,
+    "htmlWhitespaceSensitivity": "ignore",
     "tabWidth": 4
 }

@@ -77,6 +77,14 @@ export async function isUserModeratorOf(
   return row && row.count == 1;
 }
 
+export async function getSubredditModerators({subreddit_id}: SubredditId): Promise<string[]> {
+  const rows: {username: string}[] = await sql`
+    SELECT username FROM subreddit_mods 
+    WHERE subreddit_id=${subreddit_id}`;
+
+  return rows.map(r => r.username);
+}
+
 export async function createSubreddit(sub: Subreddit) {
   await sql`INSERT INTO subreddits ${sql(sub)}`;
 }

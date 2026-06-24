@@ -1,4 +1,4 @@
-import { form, query } from "$app/server";
+import { command, form, query } from "$app/server";
 import { env } from "$env/dynamic/private";
 import * as db from "$lib/server/database";
 import { assertSubredditId, ZSubredditId, type ApiRemovalReason, type Subreddit } from "$lib/types/subreddit";
@@ -72,7 +72,25 @@ export const addSubredditModerator = form(
   },
 );
 
-interface ApiResponse {
+export const getSubredditModerators = query(ZSubredditId, async (subreddit) => {
+  if(!(await isModeratorOf(subreddit))) return error(403);
+  
+  return await db.getSubredditModerators(subreddit);
+});
+
+export const refreshSubredditModerators = command(ZSubredditId, async (subreddit) => {
+  if(!(await isModeratorOf(subreddit))) return error(403);
+
+  const response = await fetch(env.API_URL + "/refresh-subreddit-moderators", {
+    method: 'POST',
+    body: JSON.stringify(subreddit)
+  });
+
+  if (!response.ok)
+    return error(500);
+});
+
+interface FetchRemovalReasonsResponse {
   reasons: ApiRemovalReason[]
 }
 
@@ -84,7 +102,7 @@ export const fetchRemovalReasons = query(ZSubredditId, async (subreddit) => {
     body: JSON.stringify(subreddit),
   });
 
-  const { reasons } = (await response.json()) as ApiResponse;
+  const { reasons } = (await response.json()) as FetchRemovalReasonsResponse;
 
   return reasons;
 });
