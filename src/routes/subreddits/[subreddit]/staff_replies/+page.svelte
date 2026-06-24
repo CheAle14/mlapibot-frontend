@@ -1,7 +1,7 @@
 <script lang="ts">
     import {
         fetchStaffReplyThreads,
-        refreshStaffReplyThread
+        refreshStaffReplyThread,
     } from "$lib/api/staff_replies.remote";
     import { Anchor } from "$lib/components/reuse/anchor";
     import { PagedTable } from "$lib/components/reuse/paged-table";
@@ -9,16 +9,9 @@
     import { Input } from "$lib/components/ui/input";
     import { TableCell, TableHead, TableRow } from "$lib/components/ui/table";
     import type { PageReq } from "$lib/types/pagination";
-    import type {
-        StaffReplyThread
-    } from "$lib/types/staff_replies";
+    import type { StaffReplyThread } from "$lib/types/staff_replies";
     import { parseRedditLink } from "$lib/utils";
-    import {
-        ChevronDown,
-        ChevronUp,
-        Plus,
-        RefreshCcw
-    } from "@lucide/svelte";
+    import { ChevronDown, ChevronUp, Plus, RefreshCcw } from "@lucide/svelte";
     import { toast } from "svelte-sonner";
     import type { PageProps } from "./$types";
     import StaffRepliesTable from "./StaffRepliesTable.svelte";
@@ -32,7 +25,7 @@
         limit: 10,
     });
 
-    let addNewThreadLink = $state('');
+    let addNewThreadLink = $state("");
 
     const subreddit = $derived(data.subreddit.id);
 
@@ -58,12 +51,15 @@
         const makePromise = async () => {
             liveRefreshes++;
             try {
-                const response =  await refreshStaffReplyThread({
+                const response = await refreshStaffReplyThread({
                     ...thread,
                     subreddit,
                 });
 
-                if (response.new_staff_comments > 0 && expanded === thread.post_id) {
+                if (
+                    response.new_staff_comments > 0 &&
+                    expanded === thread.post_id
+                ) {
                     refetchTrigger++;
                 }
 
@@ -92,17 +88,22 @@
             try {
                 const link = parseRedditLink(addNewThreadLink);
 
-                console.log(addNewThreadLink, '=>', link);
+                console.log(addNewThreadLink, "=>", link);
 
-                if (!link) throw 'No or invalid link was provided';
+                if (!link) throw "No or invalid link was provided";
 
-                if (link.subreddit !== data.subreddit.name) throw 'Link subreddit does not match this one';
+                if (link.subreddit !== data.subreddit.name)
+                    throw "Link subreddit does not match this one";
 
-                if (!('post_id' in link) || !link.post_id) throw 'Must be a permalink to a post or any comment with in';
+                if (!("post_id" in link) || !link.post_id)
+                    throw "Must be a permalink to a post or any comment with in";
 
-                if (threads.current && threads.current.data.some(s => s.post_id === link.post_id)) 
-                    throw 'That thread already exists on this page. Just hit the refresh button next to it.'
-                
+                if (
+                    threads.current &&
+                    threads.current.data.some((s) => s.post_id === link.post_id)
+                )
+                    throw "That thread already exists on this page. Just hit the refresh button next to it.";
+
                 const response = await refreshStaffReplyThread({
                     post_id: link.post_id,
                     subreddit,
@@ -112,7 +113,7 @@
                     threads.refresh();
                 }
 
-                addNewThreadLink = '';
+                addNewThreadLink = "";
                 return response;
             } finally {
                 liveRefreshes--;
@@ -124,9 +125,8 @@
         toast.promise(innerPromise, {
             loading: `Searching for replies in new post`,
             error: (err) => {
-                if (typeof err === 'string')
-                    return err;
-                return 'Failed to add new post';
+                if (typeof err === "string") return err;
+                return "Failed to add new post";
             },
             success: (data) => {
                 return `Saw ${data.total_comments} comments, ${data.total_staff_comments} by staff of which ${data.new_staff_comments} were new`;
@@ -174,7 +174,9 @@
                 </Button>
             </TableCell>
             <TableCell>
-                <Anchor href={getLink(item.post_id)}>{item.post_id}</Anchor>
+                <Anchor href={getLink(item.post_id)}>
+                    {item.title ?? item.post_id}
+                </Anchor>
             </TableCell>
             <TableCell>
                 <Anchor href={getLink(item.post_id, item.our_comment_id)}>
@@ -210,17 +212,22 @@
 
     {#snippet footer()}
         <TableRow>
-            <TableCell>
-            </TableCell>
+            <TableCell></TableCell>
 
             <TableCell colspan={4}>
-                <Input type="url" placeholder={`https://reddit.com/r/...`} bind:value={addNewThreadLink} />
+                <Input
+                    type="url"
+                    placeholder={`https://reddit.com/r/...`}
+                    bind:value={addNewThreadLink}
+                />
             </TableCell>
 
             <TableCell>
                 <PromiseButton
-                    disabled={threads.loading || !addNewThreadLink || liveRefreshes >= 3} 
-                    size="icon-sm" 
+                    disabled={threads.loading ||
+                        !addNewThreadLink ||
+                        liveRefreshes >= 3}
+                    size="icon-sm"
                     variant="outline"
                     onclick={addNewThread}
                 >

@@ -3,6 +3,7 @@ export interface StaffReplyThread {
   our_comment_id: string;
   created_at: Date;
   suffix: string | null;
+  title: string | null;
 }
 
 export interface StaffReply {
