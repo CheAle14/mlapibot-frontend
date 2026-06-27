@@ -106,3 +106,24 @@ export const fetchRemovalReasons = query(ZSubredditId, async (subreddit) => {
 
   return reasons;
 });
+
+export const getVagueWords = query(ZSubredditId, async (subreddit) => {
+  if (!(await isModeratorOf(subreddit))) return error(403);
+
+  return await db.getSubredditVagueWords(subreddit);
+});
+
+export const setVagueWords = command(z.object({
+  subreddit: ZSubredditId,
+  words: z.set(z.string()),
+}), async ({subreddit, words}) => {
+  if (!(await isModeratorOf(subreddit))) return error(403);
+
+  const asArray = words.values().reduce((acc, b) => {
+    acc.push(b);
+    return acc;
+  }, [] as string[]);
+
+  await db.setSubredditVagueWords(subreddit, asArray);
+  getVagueWords(subreddit).set(words);
+});

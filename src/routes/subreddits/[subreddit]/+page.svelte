@@ -25,6 +25,7 @@
     import RemovalReasons from "./RemovalReasons.svelte";
     import ScamsTable from "./ScamsTable.svelte";
     import StatusStickySettings from "./StatusStickySettings.svelte";
+    import VagueWords from "./VagueWords.svelte";
 
     const STATUS_URL = "https://discordstatus.com/api/v2";
     const { params, data }: PageProps = $props();
@@ -50,7 +51,7 @@
     };
 
     let sendPendingState = $state<"idle" | "sending" | "error" | "success">(
-        "idle"
+        "idle",
     );
 
     const sendPendingChanges = async () => {
@@ -91,7 +92,7 @@
             if (nav.to?.route.id) {
                 // client-side routing
                 const confirmed = confirm(
-                    "You have unsaved changes. Are you sure you wish to leave?"
+                    "You have unsaved changes. Are you sure you wish to leave?",
                 );
 
                 if (!confirmed) {
@@ -158,12 +159,14 @@
         <Button
             disabled={isAllDisabled}
             variant="destructive"
-            onclick={disableAll}>DISABLE ALL</Button
+            onclick={disableAll}
         >
+            DISABLE ALL
+        </Button>
 
-        <Button disabled={!hasChanges} onclick={revertPendingChanges}
-            >Revert changes</Button
-        >
+        <Button disabled={!hasChanges} onclick={revertPendingChanges}>
+            Revert changes
+        </Button>
     </div>
 
     {#if isFetching}
@@ -238,13 +241,13 @@
                                     />
 
                                     <Field.Content>
-                                        <Field.Label for="search_modqueue"
-                                            >Search Modqueue</Field.Label
-                                        >
-                                        <Field.Description
-                                            >If checked, also apply rules
-                                            against the subreddit's modqueue</Field.Description
-                                        >
+                                        <Field.Label for="search_modqueue">
+                                            Search Modqueue
+                                        </Field.Label>
+                                        <Field.Description>
+                                            If checked, also apply rules against
+                                            the subreddit's modqueue
+                                        </Field.Description>
                                     </Field.Content>
                                 </Field.Field>
                             </Field.Group>
@@ -264,19 +267,19 @@
                     <Field.Group class="flex flex-col lg:flex-row">
                         <Field.Set>
                             <Field.Legend>Incident post</Field.Legend>
-                            <Field.Description
-                                >Settings for when and how an incident post is
-                                made</Field.Description
-                            >
+                            <Field.Description>
+                                Settings for when and how an incident post is
+                                made
+                            </Field.Description>
 
                             <Field.Field>
-                                <Field.Label for="api_url"
-                                    >Status API URL</Field.Label
-                                >
-                                <Field.Description
-                                    >The URL where the Atlassian StatusPage API
-                                    is located</Field.Description
-                                >
+                                <Field.Label for="api_url">
+                                    Status API URL
+                                </Field.Label>
+                                <Field.Description>
+                                    The URL where the Atlassian StatusPage API
+                                    is located
+                                </Field.Description>
 
                                 <Input
                                     type="text"
@@ -286,13 +289,13 @@
                             </Field.Field>
 
                             <Field.Field>
-                                <Field.Label for="min_impact"
-                                    >Minimum Impact</Field.Label
-                                >
-                                <Field.Description
-                                    >Incidents below this impact will not be
-                                    posted</Field.Description
-                                >
+                                <Field.Label for="min_impact">
+                                    Minimum Impact
+                                </Field.Label>
+                                <Field.Description>
+                                    Incidents below this impact will not be
+                                    posted
+                                </Field.Description>
 
                                 <SelectIncidentImpact
                                     bind:value={current.min_impact}
@@ -305,24 +308,24 @@
                                 />
 
                                 <Field.Content>
-                                    <Field.Label for="distinguish"
-                                        >Distinguish</Field.Label
-                                    >
-                                    <Field.Description
-                                        >Whether the post should be
-                                        distinguished as a moderator</Field.Description
-                                    >
+                                    <Field.Label for="distinguish">
+                                        Distinguish
+                                    </Field.Label>
+                                    <Field.Description>
+                                        Whether the post should be distinguished
+                                        as a moderator
+                                    </Field.Description>
                                 </Field.Content>
                             </Field.Field>
 
                             <Field.Field>
-                                <Field.Label for="post_flair_id"
-                                    >Post Flair ID</Field.Label
-                                >
-                                <Field.Description
-                                    >If present, incidents posted to the
-                                    subreddit will use this flair template.</Field.Description
-                                >
+                                <Field.Label for="post_flair_id">
+                                    Post Flair ID
+                                </Field.Label>
+                                <Field.Description>
+                                    If present, incidents posted to the
+                                    subreddit will use this flair template.
+                                </Field.Description>
 
                                 <InputClearable
                                     id="post_flair_id"
@@ -343,13 +346,13 @@
                                 />
 
                                 <Field.Content>
-                                    <Field.Label for="sticky"
-                                        >Sticky incident posts</Field.Label
-                                    >
-                                    <Field.Description
-                                        >Should incident posts be stickied,
-                                        subject to the settings indicated.</Field.Description
-                                    >
+                                    <Field.Label for="sticky">
+                                        Sticky incident posts
+                                    </Field.Label>
+                                    <Field.Description>
+                                        Should incident posts be stickied,
+                                        subject to the settings indicated.
+                                    </Field.Description>
                                 </Field.Content>
                             </Field.Field>
 
@@ -376,13 +379,13 @@
                         <Field.Set>
                             <Field.Group>
                                 <Field.Field>
-                                    <Field.Label for="flair_id"
-                                        >Flair ID</Field.Label
-                                    >
-                                    <Field.Description
-                                        >Users with a flair with this ID are
-                                        considered staff</Field.Description
-                                    >
+                                    <Field.Label for="flair_id">
+                                        Flair ID
+                                    </Field.Label>
+                                    <Field.Description>
+                                        Users with a flair with this ID are
+                                        considered staff
+                                    </Field.Description>
                                     <Input
                                         id="flair_id"
                                         type="text"
@@ -391,13 +394,13 @@
                                     />
                                 </Field.Field>
                                 <Field.Field>
-                                    <Field.Label for="css_class"
-                                        >CSS Class</Field.Label
-                                    >
-                                    <Field.Description
-                                        >Users with a flair with this CSS class
-                                        are considered staff</Field.Description
-                                    >
+                                    <Field.Label for="css_class">
+                                        CSS Class
+                                    </Field.Label>
+                                    <Field.Description>
+                                        Users with a flair with this CSS class
+                                        are considered staff
+                                    </Field.Description>
                                     <InputClearable
                                         id="css_class"
                                         type="text"
@@ -406,13 +409,13 @@
                                     />
                                 </Field.Field>
                                 <Field.Field>
-                                    <Field.Label
-                                        >Post title exclusion</Field.Label
-                                    >
-                                    <Field.Description
-                                        >Ignore posts whose title contains this
-                                        text</Field.Description
-                                    >
+                                    <Field.Label>
+                                        Post title exclusion
+                                    </Field.Label>
+                                    <Field.Description>
+                                        Ignore posts whose title contains this
+                                        text
+                                    </Field.Description>
 
                                     <InputList
                                         type="text"
@@ -442,16 +445,16 @@
                             <Field.Set>
                                 <Field.Field>
                                     <Field.Label>Modmail recipient</Field.Label>
-                                    <Field.Description
-                                        ><p>
+                                    <Field.Description>
+                                        <p>
                                             Slop reports for /r/{params.subreddit}
                                             will be sent to this subreddit.
                                         </p>
 
                                         <p>
                                             If absent, send it to /r/{params.subreddit}
-                                        </p></Field.Description
-                                    >
+                                        </p>
+                                    </Field.Description>
 
                                     <InputClearable
                                         type="text"
@@ -467,13 +470,13 @@
                                     />
 
                                     <Field.Content>
-                                        <Field.Label for="sticky"
-                                            >Report</Field.Label
-                                        >
-                                        <Field.Description
-                                            >Should potential AI slop be
-                                            reported?</Field.Description
-                                        >
+                                        <Field.Label for="sticky">
+                                            Report
+                                        </Field.Label>
+                                        <Field.Description>
+                                            Should potential AI slop be
+                                            reported?
+                                        </Field.Description>
                                     </Field.Content>
                                 </Field.Field>
                             </Field.Set>
@@ -490,15 +493,15 @@
                 original={options}
             >
                 {#snippet children({ current })}
-                    <div class="w-full max-w-md">
+                    <div class="w-full max-w-md mb-4">
                         <Field.Group>
                             <Field.Set>
                                 <Field.Field>
                                     <Field.Label>Removal reason</Field.Label>
-                                    <Field.Description
-                                        >The reason used to remove posts under
-                                        this module</Field.Description
-                                    >
+                                    <Field.Description>
+                                        The reason used to remove posts under
+                                        this module
+                                    </Field.Description>
 
                                     <RemovalReason
                                         required
@@ -513,18 +516,20 @@
                                     />
 
                                     <Field.Content>
-                                        <Field.Label
-                                            >Check Image Posts</Field.Label
-                                        >
-                                        <Field.Description
-                                            >Whether image posts with vague
-                                            titles should also be removed</Field.Description
-                                        >
+                                        <Field.Label>
+                                            Check Image Posts
+                                        </Field.Label>
+                                        <Field.Description>
+                                            Whether image posts with vague
+                                            titles should also be removed
+                                        </Field.Description>
                                     </Field.Content>
                                 </Field.Field>
                             </Field.Set>
                         </Field.Group>
                     </div>
+
+                    <VagueWords subreddit={data.subreddit} />
                 {/snippet}
             </Module>
 

@@ -574,3 +574,26 @@ export async function getStaffRepliesInThread(
     data: rows,
   };
 }
+
+
+export async function getSubredditVagueWords({subreddit_id}: SubredditId) {
+  const words: {word: string}[] = await sql`
+    SELECT word from subreddit_vague_words
+    WHERE subreddit_id=${subreddit_id}
+    ORDER BY word ASC
+  `;
+
+  return new Set<string>(words.map(s => s.word));
+}
+
+export async function setSubredditVagueWords({subreddit_id} : SubredditId, words: string[]) {
+  await sql.begin(async sql => {
+    await sql`DELETE FROM subreddit_vague_words WHERE subreddit_id=${subreddit_id}`;
+
+    const rows = words.map(word => ({word, subreddit_id}));
+
+    await sql`INSERT INTO subreddit_vague_words ${sql(rows)}`;
+  });
+
+  await sql.notify("mlapibot", JSON.stringify({ type: "vague_words", subreddit_id }));
+}
