@@ -45,8 +45,9 @@
             <Field.Description class="w-full text-center">
                 A comment is removed if it
                 <Kbd>1</Kbd> contains a specified phrase, within a post whose title
-                <Kbd>2</Kbd> contains the specified text, and if the post's title
-                is <Kbd>3</Kbd> not ignored.
+                <Kbd>2</Kbd> contains the specified text, and if the user's flair
+                css class
+                <Kbd>3</Kbd> is not ignored.
             </Field.Description>
 
             <Field.Set class="flex-row">
@@ -59,7 +60,7 @@
                     <InputList type="text" bind:value={item.link_title} />
                 </Field.Field>
                 <Field.Field>
-                    <Field.Label><Kbd>3</Kbd> Ignored flairs</Field.Label>
+                    <Field.Label><Kbd>3</Kbd> Ignored user flairs</Field.Label>
                     <InputList type="text" bind:value={item.ignore_flairs} />
                 </Field.Field>
             </Field.Set>
